@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="32" fill="#0F172A"/>
+  <text x="96" y="72" text-anchor="middle" font-family="serif" font-size="32" font-weight="bold" fill="#F8FAFC" letter-spacing="2">THE</text>
+  <text x="96" y="108" text-anchor="middle" font-family="serif" font-size="32" font-weight="bold" fill="#F8FAFC" letter-spacing="2">RESERVE</text>
+  <line x1="48" y1="122" x2="144" y2="122" stroke="#F59E0B" stroke-width="2"/>
+  <text x="96" y="148" text-anchor="middle" font-family="serif" font-size="14" fill="#94A3B8" letter-spacing="4">HOTEL</text>
+</svg>

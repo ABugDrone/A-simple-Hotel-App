@@ -23,6 +23,7 @@ interface BillingProps {
   onUpdateBooking: (bookingId: string, updatedFields: Partial<Booking>) => void;
   onUpdateGuest: (guestId: string, updatedFields: Partial<Guest>) => void;
   onAddLog: (type: "Booking" | "Housekeeping" | "System" | "Guest", message: string) => void;
+  onGuestClick: (guest: Guest) => void;
 }
 
 export default function Billing({
@@ -31,7 +32,8 @@ export default function Billing({
   rooms,
   onUpdateBooking,
   onUpdateGuest,
-  onAddLog
+  onAddLog,
+  onGuestClick
 }: BillingProps) {
   const [activeTab, setActiveTab] = useState<"active" | "debt">("active");
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -306,8 +308,16 @@ export default function Billing({
                               Room {b.roomNumber}
                             </td>
                             <td className="p-4">
-                              <p className="font-semibold text-slate-800">{b.guestName}</p>
-                              <span className="text-[10px] text-slate-400 font-mono">{b.id}</span>
+                              <button
+                                onClick={() => {
+                                  const guest = guests.find(g => g.id === b.guestId || g.name === b.guestName);
+                                  if (guest) onGuestClick(guest);
+                                }}
+                                className="text-left hover:underline cursor-pointer font-semibold text-slate-800 hover:text-slate-600 transition-colors"
+                              >
+                                {b.guestName}
+                              </button>
+                              <span className="block text-[10px] text-slate-400 font-mono">{b.id}</span>
                             </td>
                             <td className="p-4 text-right font-mono font-semibold text-slate-700">
                               ₦{(totalRoomCharge + totalExtra).toLocaleString()}
@@ -383,8 +393,13 @@ export default function Billing({
                       debtors.map((g) => (
                         <tr key={g.id} className="hover:bg-slate-50/30">
                           <td className="p-4">
-                            <p className="font-bold text-slate-900">{g.name}</p>
-                            <span className="text-[10px] text-slate-400 font-mono">{g.id}</span>
+                            <button
+                              onClick={() => onGuestClick(g)}
+                              className="text-left hover:underline cursor-pointer font-bold text-slate-900 hover:text-slate-700 transition-colors"
+                            >
+                              {g.name}
+                            </button>
+                            <span className="block text-[10px] text-slate-400 font-mono">{g.id}</span>
                           </td>
                           <td className="p-4">
                             <p className="font-medium text-slate-700">{g.email}</p>

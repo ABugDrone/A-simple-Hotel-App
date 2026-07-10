@@ -1,7 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
-  <rect width="192" height="192" rx="32" fill="#0F172A"/>
-  <text x="96" y="72" text-anchor="middle" font-family="serif" font-size="32" font-weight="bold" fill="#F8FAFC" letter-spacing="2">THE</text>
-  <text x="96" y="108" text-anchor="middle" font-family="serif" font-size="32" font-weight="bold" fill="#F8FAFC" letter-spacing="2">RESERVE</text>
-  <line x1="48" y1="122" x2="144" y2="122" stroke="#F59E0B" stroke-width="2"/>
-  <text x="96" y="148" text-anchor="middle" font-family="serif" font-size="14" fill="#94A3B8" letter-spacing="4">HOTEL</text>
+  <rect width="192" height="192" rx="24" fill="#0A1628"/>
+  <!-- Leaf fan -->
+  <path d="M96 60 Q70 30 40 50 Q60 60 70 80 Q78 55 96 60Z" fill="#2E7D32"/>
+  <path d="M96 60 Q80 25 60 35 Q75 50 80 70 Q84 48 96 60Z" fill="#388E3C"/>
+  <path d="M96 58 Q90 20 80 25 Q88 42 92 60 Q92 38 96 58Z" fill="#43A047"/>
+  <path d="M96 58 Q102 20 112 25 Q104 42 100 60 Q100 38 96 58Z" fill="#1565C0"/>
+  <path d="M96 60 Q112 25 132 35 Q117 50 112 70 Q108 48 96 60Z" fill="#1976D2"/>
+  <path d="M96 60 Q122 30 152 50 Q132 60 122 80 Q114 55 96 60Z" fill="#1E88E5"/>
+  <!-- Wave -->
+  <path d="M40 95 Q60 80 96 85 Q132 80 152 95 Q130 108 96 110 Q62 108 40 95Z" fill="#1565C0"/>
+  <!-- Text -->
+  <text x="96" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" font-weight="900" fill="#FFFFFF" letter-spacing="3">AMIRABLE</text>
+  <text x="96" y="168" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#94A3B8" letter-spacing="2">HOTEL &amp; HOSPITALITY</text>
 </svg>

@@ -12,12 +12,18 @@ export default function SplashScreen({ status, message, onRetry, onContinueOffli
     <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-[9999]">
       {/* Brand */}
       <div className="text-center mb-12">
+        <img 
+          src="/logo.png" 
+          alt="Amirable Suites Logo" 
+          className="w-24 h-24 mx-auto mb-6 object-contain"
+          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+        />
         <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-[0.3em] text-slate-100">
-          THE RESERVE
+          AMIRABLE
         </h1>
         <div className="w-24 h-0.5 bg-amber-500 mx-auto my-5" />
         <p className="text-sm md:text-base text-slate-400 tracking-[0.15em] font-light">
-          AMIRABLE SUITE
+          SUITES
         </p>
       </div>
 
@@ -113,7 +119,7 @@ export default function SplashScreen({ status, message, onRetry, onContinueOffli
       {/* Footer */}
       <div className="absolute bottom-8 text-center">
         <p className="text-[10px] text-slate-700 font-mono tracking-wider">
-          Hotel Management Suite &copy; {new Date().getFullYear()}
+          Amirable Suites Hotel Manager &copy; {new Date().getFullYear()}
         </p>
       </div>
     </div>

@@ -1,6 +1,5 @@
 ╔══════════════════════════════════════════════════════════════╗
-║              HOTEL MANAGEMENT SUITE                         ║
-║        The Reserve - Amirable Suite                         ║
+║              AMIROBLE SUITES HOTEL MANAGER                  ║
 ║                                                            ║
 ║     Full offline PWA - Local SQLite Database                ║
 ╚══════════════════════════════════════════════════════════════╝
@@ -133,7 +132,7 @@ TROUBLESHOOTING
 
 FILE STRUCTURE
 ===============
-  HotelManagementSuite.zip
+  AmirableSuitesHotelManager.zip
   ├── start.bat              ★ START HERE - One-click launcher
   ├── README.txt             This file
   ├── package.json           Root scripts
@@ -161,5 +160,5 @@ If you encounter issues:
   3. Restart your computer and try again
 
 
-Enjoy your Hotel Management Suite!
+Enjoy your Amirable Suites Hotel Manager!
 Have a productive work day.

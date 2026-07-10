@@ -27,6 +27,7 @@ interface RoomsProps {
   onUpdateBooking: (bookingId: string, updatedFields: Partial<Booking>) => void;
   onUpdateGuest: (guestId: string, updatedFields: Partial<Guest>) => void;
   onAddLog: (type: "Booking" | "Housekeeping" | "System" | "Guest", message: string) => void;
+  onGuestClick: (guest: Guest) => void;
 }
 
 export default function Rooms({ 
@@ -36,7 +37,8 @@ export default function Rooms({
   onUpdateRoom, 
   onUpdateBooking,
   onUpdateGuest,
-  onAddLog
+  onAddLog,
+  onGuestClick
 }: RoomsProps) {
   const [selectedFilter, setSelectedFilter] = useState<string>("All");
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);

@@ -54,8 +54,8 @@ export default function InvoiceModal({
 
   // Fallback guest info from booking if guest object is not passed
   const guestName = resolvedBooking ? resolvedBooking.guestName : (resolvedGuest ? resolvedGuest.name : "Valued Guest");
-  const guestEmail = resolvedGuest ? resolvedGuest.email : "guest@serenegrand.com";
-  const guestPhone = resolvedGuest ? resolvedGuest.phone : "+234 803 123 4567";
+  const guestEmail = resolvedGuest ? resolvedGuest.email : "guest@amirablesuites.com";
+  const guestPhone = resolvedGuest ? resolvedGuest.phone : "+234 703 835 4392";
   const guestId = resolvedGuest ? resolvedGuest.id : (resolvedBooking ? resolvedBooking.guestId : "G-UNKNOWN");
 
   // Invoice Metadata
@@ -159,19 +159,22 @@ export default function InvoiceModal({
           {/* Invoice Header Section */}
           <div className="flex flex-col sm:flex-row justify-between items-start gap-6 border-b border-slate-200 pb-8">
             <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-slate-950 flex items-center justify-center text-white font-black font-mono text-sm">
-                  SS
-                </div>
+              <div className="flex items-center gap-3">
+                <img 
+                  src="/logo.png" 
+                  alt="Amirable Suites Logo" 
+                  className="w-10 h-10 object-contain"
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                />
                 <span className="font-display font-black text-slate-900 text-lg tracking-tight uppercase">
-                  Serene Suites
+                  Amirable Suites
                 </span>
               </div>
               <p className="text-slate-400 text-xs leading-relaxed max-w-xs font-medium">
-                Plot 124, Adetokunbo Ademola Crescent,<br />
-                Wuse II, Abuja, Nigeria<br />
-                <span className="font-semibold text-slate-500">Tel:</span> +234 9 460 3000<br />
-                <span className="font-semibold text-slate-500">Email:</span> billing@serenesuites.com
+                No 3, Parklane street, Karewa GRA,<br />
+                Jimeta Yola, Adamawa State<br />
+                <span className="font-semibold text-slate-500">Tel:</span> +2347038354392<br />
+                <span className="font-semibold text-slate-500">Email:</span> amirablesuites@gmail.com
               </p>
             </div>
 
@@ -275,7 +278,7 @@ export default function InvoiceModal({
                     <tr className="text-slate-700">
                       <td className="p-4">
                         <span className="font-bold text-slate-900">Accomodation Nightly Tariff</span>
-                        <p className="text-[10px] text-slate-400">Suite stay at Serene Suites {roomType} category</p>
+                        <p className="text-[10px] text-slate-400">Suite stay at Amirable Suites {roomType} category</p>
                       </td>
                       <td className="p-4 text-center font-mono">
                         ₦{(roomPrice || (baseRent / nightsCount)).toLocaleString()}
@@ -383,7 +386,7 @@ export default function InvoiceModal({
 
           {/* Footer Terms */}
           <div className="border-t border-slate-200 pt-8 text-center text-[10px] text-slate-400 font-medium leading-relaxed">
-            <p>Thank you for choosing Serene Suites. We appreciate your patronage.</p>
+            <p>Thank you for choosing Amirable Suites. We appreciate your patronage.</p>
             <p>All outstanding amounts are payable upon receipt or checkout. Late settlements incur operational interest charges.</p>
             <p className="font-bold text-slate-500 mt-2 font-mono uppercase tracking-widest text-[9px]">
               Computer Generated Invoice Statement - Official Copy

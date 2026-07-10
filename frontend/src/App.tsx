@@ -9,6 +9,7 @@ import Billing from "./components/Billing";
 import AdminConfig from "./components/AdminConfig";
 import Login from "./components/Login";
 import SplashScreen from "./components/SplashScreen";
+import GuestDetailModal from "./components/GuestDetailModal";
 
 import { Room, Booking, Guest, OperationLog, Staff } from "./types";
 import { INITIAL_ROOMS, INITIAL_BOOKINGS, INITIAL_GUESTS, INITIAL_LOGS } from "./data";
@@ -56,6 +57,14 @@ export default function App() {
   // PWA install state
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [isInstallable, setIsInstallable] = useState(false);
+
+  // Mobile sidebar state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Guest detail modal state
+  const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
+  const [isGuestDetailOpen, setIsGuestDetailOpen] = useState(false);
 
   // Restore auth token on mount
   useEffect(() => {
@@ -174,18 +183,56 @@ export default function App() {
       e.preventDefault();
       setDeferredPrompt(e);
       setShowInstallBanner(true);
+      setIsInstallable(true);
     };
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
-  const handleInstallPWA = () => {
+  // Always allow install attempts
+  useEffect(() => {
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+      setIsInstallable(false);
+      return;
+    }
+    setIsInstallable(true);
+  }, []);
+
+  const handleInstallPWA = async () => {
     if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(() => {
-        setDeferredPrompt(null);
-        setShowInstallBanner(false);
-      });
+      try {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === "accepted") {
+          setShowInstallBanner(false);
+        }
+      } catch {
+        // fallback
+      }
+      setDeferredPrompt(null);
+    } else {
+      // Show a proper install instruction modal instead of alert
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isAndroid = /Android/.test(navigator.userAgent);
+      const isChrome = /Chrome/.test(navigator.userAgent) && !/Edg/.test(navigator.userAgent);
+      const isEdge = /Edg/.test(navigator.userAgent);
+      const isFirefox = /Firefox/.test(navigator.userAgent);
+
+      let instructions = "To install Amirable Suites:\n\n";
+      if (isIOS) {
+        instructions += "1. Tap the Share button (square with arrow) at the bottom\n2. Scroll down and tap 'Add to Home Screen'\n3. Tap 'Add' to confirm";
+      } else if (isAndroid) {
+        instructions += "1. Tap the three-dot menu (⋮) in the top right\n2. Tap 'Add to Home screen' or 'Install app'\n3. Tap 'Add' to confirm";
+      } else if (isChrome) {
+        instructions += "1. Look for the install icon (⊕) in the address bar (right side)\n2. Click it and select 'Install'\n\nOr: Click the three-dot menu → 'Save and share' → 'Install page as app'";
+      } else if (isEdge) {
+        instructions += "1. Look for the install icon (⊕) in the address bar\n2. Click it to install\n\nOr: Click the three-dot menu → 'Apps' → 'Install this site as an app'";
+      } else if (isFirefox) {
+        instructions += "1. Click the three-dot menu (⋯) in the top right\n2. Click 'Install' or 'Add to Home Screen'";
+      } else {
+        instructions += "1. Click the install icon (⊕) in the address bar\n2. Or use your browser menu → 'Install App' or 'Add to Home Screen'";
+      }
+      alert(instructions);
     }
   };
 
@@ -493,6 +540,10 @@ export default function App() {
             onUpdateBooking={handleUpdateBooking}
             onUpdateGuest={handleUpdateGuest}
             onAddLog={handleAddLog}
+            onGuestClick={(guest) => {
+              setSelectedGuest(guest);
+              setIsGuestDetailOpen(true);
+            }}
           />
         );
       case "reservations":
@@ -509,12 +560,19 @@ export default function App() {
             onAddLog={handleAddLog}
             onCheckOutBooking={handleCheckOutBooking}
             onUpdateGuest={handleUpdateGuest}
+            onGuestClick={(guest) => {
+              setSelectedGuest(guest);
+              setIsGuestDetailOpen(true);
+            }}
           />
         );
       case "housekeeping":
         return <Housekeeping rooms={rooms} onUpdateRoomStatus={handleUpdateRoomStatus} onAddLog={handleAddLog} />;
       case "guests":
-        return <Guests guests={guests} />;
+        return <Guests guests={guests} onGuestClick={(guest) => {
+          setSelectedGuest(guest);
+          setIsGuestDetailOpen(true);
+        }} />;
       case "billing":
         return (
           <Billing
@@ -524,6 +582,10 @@ export default function App() {
             onUpdateBooking={handleUpdateBooking}
             onUpdateGuest={handleUpdateGuest}
             onAddLog={handleAddLog}
+            onGuestClick={(guest) => {
+              setSelectedGuest(guest);
+              setIsGuestDetailOpen(true);
+            }}
           />
         );
       case "admin_config":
@@ -586,14 +648,27 @@ export default function App() {
         occupancyPercent={occupancyPercent}
         currentUser={currentUser}
         onLogout={handleLogout}
+        isSidebarOpen={isSidebarOpen}
+        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+        onInstallPWA={handleInstallPWA}
+        isInstallable={isInstallable}
       />
-      <main className="flex-1 min-w-0 overflow-x-hidden">
+      <main className="flex-1 min-w-0 overflow-x-hidden pt-14 lg:pt-0">
         {renderView()}
       </main>
 
+      {/* Guest Detail Modal */}
+      <GuestDetailModal
+        isOpen={isGuestDetailOpen}
+        onClose={() => setIsGuestDetailOpen(false)}
+        guest={selectedGuest}
+        bookings={bookings}
+        rooms={rooms}
+      />
+
       {/* PWA Install Banner */}
       <div className={`pwa-install-banner ${showInstallBanner ? "show" : ""}`}>
-        <span>Install Hotel Manager for offline access</span>
+        <span className="text-sm">Install Amirable Suites for offline access</span>
         <div className="flex gap-2">
           <button className="dismiss" onClick={dismissInstallBanner}>Not now</button>
           <button onClick={handleInstallPWA}>Install</button>

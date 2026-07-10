@@ -14,9 +14,10 @@ import { Guest } from "../types";
 
 interface GuestsProps {
   guests: Guest[];
+  onGuestClick: (guest: Guest) => void;
 }
 
-export default function Guests({ guests }: GuestsProps) {
+export default function Guests({ guests, onGuestClick }: GuestsProps) {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filterVip, setFilterVip] = useState<boolean>(false);
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);

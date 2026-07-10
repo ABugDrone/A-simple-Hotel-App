@@ -1,4 +1,4 @@
-const CACHE_NAME = "hotel-mgmt-v1";
+const CACHE_NAME = "amirable-hotel-v3";
 const ASSETS = [
   "/",
   "/index.html",
@@ -30,7 +30,7 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  // API requests: try network first, fall back to cache
+  // API requests: network first, fall back to cache
   if (url.pathname.startsWith("/api/")) {
     event.respondWith(
       fetch(event.request)
@@ -52,7 +52,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Static assets: cache-first
+  // Static assets: cache first, then network
   event.respondWith(
     caches.match(event.request).then((cached) => {
       return cached || fetch(event.request).then((res) => {

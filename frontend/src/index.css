@@ -10,6 +10,7 @@
 body {
   background-color: #F9FAFB;
   font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Prevent pull-to-refresh in PWA */
@@ -54,4 +55,70 @@ html {
   background: transparent;
   color: #94A3B8;
   padding: 8px 12px;
+}
+
+/* Mobile responsive tables */
+@media (max-width: 768px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .pwa-install-banner {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+    padding: 12px;
+  }
+  
+  .pwa-install-banner button {
+    width: 100%;
+  }
+}
+
+/* Mobile card-based tables */
+@media (max-width: 640px) {
+  .mobile-table-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .mobile-table-card td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 0;
+    border: none !important;
+  }
+  
+  .mobile-table-card td::before {
+    content: attr(data-label);
+    font-size: 10px;
+    font-weight: 700;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+/* Touch-friendly hit targets */
+@media (max-width: 1024px) {
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

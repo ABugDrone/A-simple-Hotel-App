@@ -18,7 +18,9 @@ import {
   CreditCard,
   PlusCircle,
   LogOut,
-  ArrowRightLeft
+  ArrowRightLeft,
+  UtensilsCrossed,
+  Shirt
 } from "lucide-react";
 import { Booking, Room, Guest } from "../types";
 import InvoiceModal from "./InvoiceModal";
@@ -35,6 +37,7 @@ interface FrontDeskProps {
   onAddLog: (type: "Booking" | "Housekeeping" | "System" | "Guest", message: string) => void;
   onCheckOutBooking: (bookingId: string) => void;
   onUpdateGuest: (guestId: string, updatedFields: Partial<Guest>) => void;
+  onGuestClick: (guest: Guest) => void;
 }
 
 export default function FrontDesk({
@@ -48,7 +51,8 @@ export default function FrontDesk({
   onUpdateRoomStatus,
   onAddLog,
   onCheckOutBooking,
-  onUpdateGuest
+  onUpdateGuest,
+  onGuestClick
 }: FrontDeskProps) {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState<string>("All");
@@ -91,6 +95,13 @@ export default function FrontDesk({
   const [settleGuestId, setSettleGuestId] = useState<string | null>(null);
   const [settleDebtAmount, setSettleDebtAmount] = useState<string>("");
   const [settleDebtMethod, setSettleDebtMethod] = useState<string>("Card");
+
+  // Kitchen & Laundry department charge states
+  const [departmentTab, setDepartmentTab] = useState<"kitchen" | "laundry">("kitchen");
+  const [deptChargeBookingId, setDeptChargeBookingId] = useState<string>("");
+  const [deptChargeAmount, setDeptChargeAmount] = useState<string>("");
+  const [deptChargeDesc, setDeptChargeDesc] = useState<string>("");
+  const [deptChargeItem, setDeptChargeItem] = useState<string>("");
 
   // Calculations for dashboard clickable cards
   const totalOutstandingDebt = guests.reduce((sum, g) => sum + (g.debt || 0), 0);
@@ -174,6 +185,39 @@ export default function FrontDesk({
     onUpdateBookingStatus(booking.id, "Cancelled");
     onUpdateRoomStatus(booking.roomId, "Available");
     onAddLog("Booking", `Reservation ${booking.id} for ${booking.guestName} has been cancelled.`);
+  };
+
+  // Kitchen & Laundry department charge handler
+  const handleDeptChargeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!deptChargeBookingId || !deptChargeAmount || Number(deptChargeAmount) <= 0 || !deptChargeDesc.trim()) return;
+
+    const booking = bookings.find(b => b.id === deptChargeBookingId);
+    if (!booking) return;
+
+    const amount = Number(deptChargeAmount);
+    const deptName = departmentTab === "kitchen" ? "Kitchen" : "Laundry";
+    const desc = deptChargeDesc.trim();
+    const chargeItem = deptChargeItem.trim();
+
+    const newCharge = {
+      id: `CHG-${Date.now().toString().slice(-4)}`,
+      description: `${deptName}: ${desc}${chargeItem ? ` (${chargeItem})` : ""}`,
+      amount,
+      date: new Date().toISOString().split("T")[0]
+    };
+
+    const currentCharges = booking.extraCharges || [];
+    onUpdateBooking(booking.id, {
+      extraCharges: [...currentCharges, newCharge]
+    });
+
+    onAddLog("System", `${deptName} Department: Posted charge of ₦${amount.toLocaleString()} for "${desc}${chargeItem ? ` - ${chargeItem}` : ""}" to Guest ${booking.guestName} (Room ${booking.roomNumber}).`);
+
+    setDeptChargeBookingId("");
+    setDeptChargeAmount("");
+    setDeptChargeDesc("");
+    setDeptChargeItem("");
   };
 
   // Calculate reservation nights
@@ -852,6 +896,123 @@ export default function FrontDesk({
         )}
       </div>
 
+      {/* Kitchen & Laundry Department Charges */}
+      <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-xs">
+        <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <div className="flex items-center gap-2.5">
+            <UtensilsCrossed className="w-5 h-5 text-slate-800" />
+            <div>
+              <h2 className="font-display font-medium text-slate-900 text-sm">Kitchen & Laundry Desk</h2>
+              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Post department charges to guest folios in real-time</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Department Tabs */}
+        <div className="p-4 border-b border-slate-100">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setDepartmentTab("kitchen")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                departmentTab === "kitchen"
+                  ? "bg-slate-900 border-slate-900 text-white shadow-xs"
+                  : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              <UtensilsCrossed className="w-4 h-4" />
+              <span>Kitchen Orders</span>
+            </button>
+            <button
+              onClick={() => setDepartmentTab("laundry")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                departmentTab === "laundry"
+                  ? "bg-slate-900 border-slate-900 text-white shadow-xs"
+                  : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              <Shirt className="w-4 h-4" />
+              <span>Laundry Services</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Charge Form */}
+        <div className="p-6">
+          <form onSubmit={handleDeptChargeSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Select Guest Room</label>
+              <select
+                required
+                value={deptChargeBookingId}
+                onChange={(e) => setDeptChargeBookingId(e.target.value)}
+                className="block w-full rounded-lg border border-slate-200 px-3 py-2.5 text-xs font-semibold text-slate-700 bg-white"
+              >
+                <option value="">-- Choose Active Room --</option>
+                {bookings.filter(b => b.status === "Checked In").map(b => (
+                  <option key={b.id} value={b.id}>Room {b.roomNumber} - {b.guestName}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">
+                {departmentTab === "kitchen" ? "Item / Dish" : "Service Type"}
+              </label>
+              <input
+                type="text"
+                required
+                placeholder={departmentTab === "kitchen" ? "e.g. Grilled Chicken, Room Service" : "e.g. Dry Cleaning, Ironing"}
+                value={deptChargeItem}
+                onChange={(e) => setDeptChargeItem(e.target.value)}
+                className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-800"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Description / Note</label>
+              <input
+                type="text"
+                required
+                placeholder="Brief description"
+                value={deptChargeDesc}
+                onChange={(e) => setDeptChargeDesc(e.target.value)}
+                className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-800"
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Amount (₦)</label>
+                <div className="relative">
+                  <span className="absolute left-2 inset-y-0 flex items-center text-[10px] font-bold text-slate-400">₦</span>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    placeholder="0"
+                    value={deptChargeAmount}
+                    onChange={(e) => setDeptChargeAmount(e.target.value)}
+                    className="block w-full rounded-lg border border-slate-200 pl-5 pr-2 py-2 text-xs font-mono font-semibold text-slate-800"
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                disabled={!deptChargeBookingId || !deptChargeAmount || Number(deptChargeAmount) <= 0 || !deptChargeDesc.trim()}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  (!deptChargeBookingId || !deptChargeAmount || Number(deptChargeAmount) <= 0 || !deptChargeDesc.trim())
+                    ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                    : "bg-slate-900 hover:bg-slate-800 text-white"
+                }`}
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                <span>Post</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
       {/* Filter and Search controls */}
       <div className="flex flex-col sm:flex-row items-center gap-4 bg-white border border-slate-200/80 p-4 rounded-xl">
         <div className="relative flex-1 w-full">
@@ -918,7 +1079,15 @@ export default function FrontDesk({
                   <tr key={b.id} className="hover:bg-slate-50/50 transition-colors">
                     {/* Guest Name & ID */}
                     <td className="py-4 px-6">
-                      <div className="font-semibold text-slate-900">{b.guestName}</div>
+                      <button
+                        onClick={() => {
+                          const guest = guests.find(g => g.id === b.guestId || g.name === b.guestName);
+                          if (guest) onGuestClick(guest);
+                        }}
+                        className="text-left hover:underline cursor-pointer text-slate-900 font-semibold hover:text-slate-700 transition-colors"
+                      >
+                        {b.guestName}
+                      </button>
                       <div className="text-[10px] font-mono text-slate-400 mt-0.5">{b.id}</div>
                     </td>
 

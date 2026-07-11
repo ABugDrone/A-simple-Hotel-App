@@ -106,6 +106,9 @@ export default function FrontDesk({
   const [deptChargeDesc, setDeptChargeDesc] = useState<string>("");
   const [deptChargeItem, setDeptChargeItem] = useState<string>("");
 
+  // Room Transfer state
+  const [transferNewRoomId, setTransferNewRoomId] = useState<string>("");
+
   // Calculations for dashboard clickable cards
   const totalOutstandingDebt = guests.reduce((sum, g) => sum + (g.debt || 0), 0);
   const debtGuestsCount = guests.filter(g => (g.debt || 0) > 0).length;

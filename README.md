@@ -45,8 +45,7 @@ The default admin account credentials are configured in `.env` (not committed to
 
 | Username | Password | Role  |
 |----------|----------|-------|
-| A.Adam   | 235711   | Admin |
-
+ 
 > **Note:** The admin account credentials are stored in `.env` which is excluded from Git.  
 > If you need the login credentials, please contact the developer or check the `.env` file.  
 > Developers can create their own authentication by modifying the `.env` file or running the backend seed manually.

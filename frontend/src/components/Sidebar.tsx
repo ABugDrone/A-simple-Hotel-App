@@ -91,9 +91,7 @@ export default function Sidebar({
         {/* Hotel Brand Header */}
         <div className="p-6 lg:p-8 pb-6 lg:pb-10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center text-white font-black font-mono text-sm flex-shrink-0">
-              AS
-            </div>
+            <img src="/icons/icon-192.svg" alt="Amirable Hotel & Hospitality" className="h-10 w-auto flex-shrink-0" />
             <div className="min-w-0">
               <h1 className="text-xs font-bold tracking-[0.15em] text-slate-400 uppercase truncate">
                 Amirable

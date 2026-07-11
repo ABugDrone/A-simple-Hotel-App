@@ -13,17 +13,16 @@ export default function SplashScreen({ status, message, onRetry, onContinueOffli
       {/* Brand */}
       <div className="text-center mb-12">
         <img 
-          src="/logo.png" 
-          alt="Amirable Suites Logo" 
-          className="w-24 h-24 mx-auto mb-6 object-contain"
-          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+          src="/icons/icon-512.svg" 
+          alt="Amirable Hotel & Hospitality Logo" 
+          className="w-28 h-28 mx-auto mb-6 object-contain"
         />
         <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-[0.3em] text-slate-100">
           AMIRABLE
         </h1>
         <div className="w-24 h-0.5 bg-amber-500 mx-auto my-5" />
         <p className="text-sm md:text-base text-slate-400 tracking-[0.15em] font-light">
-          SUITES
+          HOTEL & HOSPITALITY
         </p>
       </div>
 

@@ -1,11 +1,11 @@
 {
-  "name": "Amirable Suites Hotel Manager",
+  "name": "Amirable Hotel & Hospitality Manager",
   "short_name": "Amirable Suites",
-  "description": "Amirable Suites Hotel & Hospitality Management Platform",
+  "description": "Amirable Hotel & Hospitality Management Platform",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0A1628",
-  "theme_color": "#0A1628",
+  "background_color": "#FFFFFF",
+  "theme_color": "#1565C0",
   "orientation": "any",
   "icons": [
     {

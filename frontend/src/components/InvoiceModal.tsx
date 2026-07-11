@@ -161,14 +161,18 @@ export default function InvoiceModal({
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <img 
-                  src="/logo.png" 
-                  alt="Amirable Suites Logo" 
-                  className="w-10 h-10 object-contain"
-                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  src="/icons/icon-192.svg" 
+                  alt="Amirable Hotel & Hospitality Logo" 
+                  className="w-12 h-12 object-contain"
                 />
-                <span className="font-display font-black text-slate-900 text-lg tracking-tight uppercase">
-                  Amirable Suites
-                </span>
+                <div>
+                  <span className="font-display font-black text-slate-900 text-lg tracking-tight uppercase block">
+                    Amirable
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-500 tracking-wider uppercase">
+                    Hotel & Hospitality
+                  </span>
+                </div>
               </div>
               <p className="text-slate-400 text-xs leading-relaxed max-w-xs font-medium">
                 No 3, Parklane street, Karewa GRA,<br />

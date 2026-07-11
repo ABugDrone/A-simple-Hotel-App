@@ -85,12 +85,7 @@ export default function ChangePassword({ staff, onComplete, onSkip }: ChangePass
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md z-10 mb-8 text-center">
         <div className="flex justify-center items-center gap-2 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-slate-950 font-black font-mono text-lg shadow-lg shadow-amber-500/20">
-            <Shield className="w-5 h-5" />
-          </div>
-          <span className="font-display font-black text-white text-xl tracking-wider uppercase">
-            Security Notice
-          </span>
+          <img src="/icons/icon-192.svg" alt="Amirable Hotel & Hospitality" className="h-14 w-auto" />
         </div>
         <h2 className="text-lg font-display font-medium text-white tracking-tight mt-2">
           Change Your Password

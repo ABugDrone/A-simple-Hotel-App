@@ -1,15 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
-  <rect width="192" height="192" rx="24" fill="#0A1628"/>
-  <!-- Leaf fan -->
-  <path d="M96 60 Q70 30 40 50 Q60 60 70 80 Q78 55 96 60Z" fill="#2E7D32"/>
-  <path d="M96 60 Q80 25 60 35 Q75 50 80 70 Q84 48 96 60Z" fill="#388E3C"/>
-  <path d="M96 58 Q90 20 80 25 Q88 42 92 60 Q92 38 96 58Z" fill="#43A047"/>
-  <path d="M96 58 Q102 20 112 25 Q104 42 100 60 Q100 38 96 58Z" fill="#1565C0"/>
-  <path d="M96 60 Q112 25 132 35 Q117 50 112 70 Q108 48 96 60Z" fill="#1976D2"/>
-  <path d="M96 60 Q122 30 152 50 Q132 60 122 80 Q114 55 96 60Z" fill="#1E88E5"/>
-  <!-- Wave -->
-  <path d="M40 95 Q60 80 96 85 Q132 80 152 95 Q130 108 96 110 Q62 108 40 95Z" fill="#1565C0"/>
+  <rect width="192" height="192" rx="24" fill="#FFFFFF"/>
+  <!-- Leaf fan - green petals (left) -->
+  <path d="M96 65 Q65 25 30 55 Q55 60 65 85 Q75 55 96 65Z" fill="#2E8B3A"/>
+  <path d="M96 65 Q75 20 50 35 Q68 50 75 75 Q80 48 96 65Z" fill="#3DA84A"/>
+  <path d="M96 62 Q88 15 75 22 Q85 42 90 62 Q90 38 96 62Z" fill="#4DB85A"/>
+  <!-- Leaf fan - blue petals (right) -->
+  <path d="M96 62 Q104 15 117 22 Q107 42 102 62 Q102 38 96 62Z" fill="#1565C0"/>
+  <path d="M96 65 Q117 20 142 35 Q124 50 117 75 Q112 48 96 65Z" fill="#1976D2"/>
+  <path d="M96 65 Q127 25 162 55 Q137 60 127 85 Q117 55 96 65Z" fill="#1E88E5"/>
+  <!-- Blue wave -->
+  <path d="M30 90 Q60 72 96 78 Q132 72 162 90 Q135 105 96 108 Q61 105 30 90Z" fill="#1565C0"/>
+  <!-- Green wave accent -->
+  <path d="M55 100 Q75 92 96 95 Q117 92 137 100 Q118 110 96 112 Q74 110 55 100Z" fill="#2E8B3A"/>
   <!-- Text -->
-  <text x="96" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" font-weight="900" fill="#FFFFFF" letter-spacing="3">AMIRABLE</text>
-  <text x="96" y="168" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#94A3B8" letter-spacing="2">HOTEL &amp; HOSPITALITY</text>
+  <text x="96" y="145" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="28" font-weight="900" fill="#1565C0" letter-spacing="2">AMIRABLE</text>
+  <text x="96" y="170" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#1A237E" letter-spacing="1.5">HOTEL &amp; HOSPITALITY</text>
 </svg>

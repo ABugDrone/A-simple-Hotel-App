@@ -85,7 +85,7 @@ export default function ChangePassword({ staff, onComplete, onSkip }: ChangePass
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md z-10 mb-8 text-center">
         <div className="flex justify-center items-center gap-2 mb-2">
-          <img src="/icons/icon-192.svg" alt="Amirable Hotel & Hospitality" className="h-14 w-auto" />
+          <img src="/logo.png" alt="Amirable Hotel & Hospitality" className="h-14 w-auto" />
         </div>
         <h2 className="text-lg font-display font-medium text-white tracking-tight mt-2">
           Change Your Password

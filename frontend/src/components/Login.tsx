@@ -58,7 +58,7 @@ export default function Login({ onLogin, isBackendConnected }: LoginProps) {
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md z-10">
         <div className="flex justify-center items-center gap-2 mb-2">
-          <img src="/icons/icon-192.svg" alt="Amirable Hotel & Hospitality" className="h-14 w-auto" />
+          <img src="/logo.png" alt="Amirable Hotel & Hospitality" className="h-14 w-auto" />
         </div>
         <h2 className="text-center text-sm font-bold tracking-[0.2em] text-slate-400 uppercase">
           The Reserve Amirable Suite

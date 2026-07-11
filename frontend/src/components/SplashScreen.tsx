@@ -13,7 +13,7 @@ export default function SplashScreen({ status, message, onRetry, onContinueOffli
       {/* Brand */}
       <div className="text-center mb-12">
         <img 
-          src="/icons/icon-512.svg" 
+          src="/logo.png" 
           alt="Amirable Hotel & Hospitality Logo" 
           className="w-28 h-28 mx-auto mb-6 object-contain"
         />

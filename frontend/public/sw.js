@@ -1,12 +1,9 @@
-const CACHE_NAME = "amirable-hotel-v6";
+const CACHE_NAME = "amirable-hotel-v7";
 const ASSETS = [
   "/",
   "/index.html",
   "/manifest.json",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
-  "/icons/icon-192.svg",
-  "/icons/icon-512.svg"
+  "/logo.png"
 ];
 
 self.addEventListener("install", (event) => {

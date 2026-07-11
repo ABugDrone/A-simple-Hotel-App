@@ -160,7 +160,7 @@ export default function InvoiceModal({
           <div className="text-center border-b-2 border-slate-900 pb-6">
             <div className="flex justify-center mb-3">
               <img 
-                src="/icons/icon-192.svg" 
+                src="/logo.png"
                 alt="Amirable Hotel & Hospitality Logo" 
                 className="w-16 h-16 object-contain"
               />

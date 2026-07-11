@@ -20,7 +20,8 @@ import {
   LogOut,
   ArrowRightLeft,
   UtensilsCrossed,
-  Shirt
+  Shirt,
+  ArrowLeftRight
 } from "lucide-react";
 import { Booking, Room, Guest } from "../types";
 import InvoiceModal from "./InvoiceModal";
@@ -38,6 +39,7 @@ interface FrontDeskProps {
   onCheckOutBooking: (bookingId: string) => void;
   onUpdateGuest: (guestId: string, updatedFields: Partial<Guest>) => void;
   onGuestClick: (guest: Guest) => void;
+  onTransferBookingRoom: (bookingId: string, newRoomId: string) => void;
 }
 
 export default function FrontDesk({
@@ -52,7 +54,8 @@ export default function FrontDesk({
   onAddLog,
   onCheckOutBooking,
   onUpdateGuest,
-  onGuestClick
+  onGuestClick,
+  onTransferBookingRoom
 }: FrontDeskProps) {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState<string>("All");
@@ -102,6 +105,10 @@ export default function FrontDesk({
   const [deptChargeAmount, setDeptChargeAmount] = useState<string>("");
   const [deptChargeDesc, setDeptChargeDesc] = useState<string>("");
   const [deptChargeItem, setDeptChargeItem] = useState<string>("");
+
+  // Room Transfer modal states
+  const [transferBookingId, setTransferBookingId] = useState<string | null>(null);
+  const [transferNewRoomId, setTransferNewRoomId] = useState<string>("");
 
   // Calculations for dashboard clickable cards
   const totalOutstandingDebt = guests.reduce((sum, g) => sum + (g.debt || 0), 0);
@@ -218,6 +225,26 @@ export default function FrontDesk({
     setDeptChargeAmount("");
     setDeptChargeDesc("");
     setDeptChargeItem("");
+  };
+
+  // Room Transfer handler
+  const handleRoomTransfer = () => {
+    if (!transferBookingId || !transferNewRoomId) return;
+    
+    const booking = bookings.find(b => b.id === transferBookingId);
+    if (!booking) return;
+    
+    const newRoom = rooms.find(r => r.id === transferNewRoomId);
+    if (!newRoom) return;
+    
+    const oldRoom = rooms.find(r => r.id === booking.roomId);
+    
+    onTransferBookingRoom(transferBookingId, transferNewRoomId);
+    
+    onAddLog("Booking", `Room Transfer: Guest ${booking.guestName} transferred from Room ${oldRoom?.roomNumber || "?"} to Room ${newRoom.roomNumber}.`);
+    
+    setTransferBookingId(null);
+    setTransferNewRoomId("");
   };
 
   // Calculate reservation nights
@@ -1192,6 +1219,17 @@ export default function FrontDesk({
                             <span>Record Payment</span>
                           </button>
                           <button
+                            id={`btn-transfer-${b.id}`}
+                            onClick={() => {
+                              setTransferBookingId(b.id);
+                              setTransferNewRoomId("");
+                            }}
+                            className="bg-blue-600 text-white hover:bg-blue-700 px-2.5 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer inline-flex items-center gap-1"
+                          >
+                            <ArrowLeftRight className="w-3.5 h-3.5" />
+                            <span>Transfer</span>
+                          </button>
+                          <button
                             id={`btn-checkout-${b.id}`}
                             onClick={() => handleCheckOut(b)}
                             className="bg-slate-900 text-white hover:bg-slate-800 px-3 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer"
@@ -1639,6 +1677,144 @@ export default function FrontDesk({
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Room Transfer Modal */}
+      {transferBookingId && (() => {
+        const bk = bookings.find(b => b.id === transferBookingId);
+        if (!bk) return null;
+
+        const availableRooms = rooms.filter(r => r.status === "Available" && r.id !== bk.roomId);
+        const currentRoom = rooms.find(r => r.id === bk.roomId);
+        const newRoom = rooms.find(r => r.id === transferNewRoomId);
+
+        return (
+          <div id="room-transfer-modal" className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-xl max-w-lg w-full overflow-hidden border border-slate-100">
+              {/* Header */}
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-blue-50/50">
+                <div className="flex items-center gap-2">
+                  <ArrowLeftRight className="w-5 h-5 text-blue-600" />
+                  <div>
+                    <h3 className="font-display font-medium text-slate-900 text-base">Guest Room Transfer</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Move guest to a different room while keeping the same booking.</p>
+                  </div>
+                </div>
+                <button
+                  id="btn-close-transfer-modal"
+                  onClick={() => {
+                    setTransferBookingId(null);
+                    setTransferNewRoomId("");
+                  }}
+                  className="text-slate-400 hover:text-slate-600 font-bold text-lg cursor-pointer"
+                >
+                  &times;
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 space-y-4">
+                {/* Current Booking Info */}
+                <div className="bg-slate-50 border border-slate-200/60 p-4 rounded-lg space-y-2 text-xs">
+                  <p className="font-bold text-slate-800 mb-2">Current Booking Details</p>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-medium">Guest:</span>
+                    <span className="font-bold text-slate-900">{bk.guestName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-medium">Booking ID:</span>
+                    <span className="font-mono text-slate-600">{bk.id}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-medium">Current Room:</span>
+                    <span className="font-bold text-slate-900">Room {currentRoom?.roomNumber} ({currentRoom?.type})</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-medium">Schedule:</span>
+                    <span className="font-mono text-slate-600">{bk.checkInDate} to {bk.checkOutDate}</span>
+                  </div>
+                </div>
+
+                {/* Transfer Arrow */}
+                <div className="flex items-center justify-center gap-4 py-2">
+                  <div className="text-center">
+                    <span className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">From</span>
+                    <p className="font-bold text-slate-900">Room {currentRoom?.roomNumber}</p>
+                  </div>
+                  <ArrowLeftRight className="w-5 h-5 text-blue-500" />
+                  <div className="text-center">
+                    <span className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">To</span>
+                    <p className="font-bold text-blue-600">{newRoom ? `Room ${newRoom.roomNumber}` : "Select Room"}</p>
+                  </div>
+                </div>
+
+                {/* New Room Selection */}
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Select Available Room for Transfer</label>
+                  <select
+                    id="transfer-room-select"
+                    value={transferNewRoomId}
+                    onChange={(e) => setTransferNewRoomId(e.target.value)}
+                    className="block w-full rounded-lg border border-slate-200 px-3 py-2.5 text-xs font-semibold text-slate-700 bg-white"
+                  >
+                    <option value="">-- Choose Available Room --</option>
+                    {availableRooms.map(r => (
+                      <option key={r.id} value={r.id}>Room {r.roomNumber} - {r.type} (₦{r.price}/night)</option>
+                    ))}
+                  </select>
+                  {availableRooms.length === 0 && (
+                    <p className="text-[10px] text-rose-500 font-bold mt-1">No other rooms are available for transfer.</p>
+                  )}
+                </div>
+
+                {/* Price Comparison */}
+                {newRoom && (
+                  <div className="bg-blue-50 border border-blue-100 p-3 rounded-lg text-xs space-y-1">
+                    <p className="font-bold text-blue-800">Rate Comparison</p>
+                    <div className="flex justify-between">
+                      <span className="text-slate-600">Current rate:</span>
+                      <span className="font-semibold">₦{currentRoom?.price.toLocaleString()}/night</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-600">New rate:</span>
+                      <span className="font-semibold text-blue-700">₦{newRoom.price.toLocaleString()}/night</span>
+                    </div>
+                    {currentRoom?.price !== newRoom.price && (
+                      <p className="text-[10px] text-amber-600 font-semibold mt-1">
+                        Note: Rate difference will be reflected in the final invoice.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
+                <button
+                  id="btn-cancel-transfer"
+                  onClick={() => {
+                    setTransferBookingId(null);
+                    setTransferNewRoomId("");
+                  }}
+                  className="border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold px-4 py-2 rounded-lg text-xs cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  id="btn-confirm-transfer"
+                  onClick={handleRoomTransfer}
+                  disabled={!transferNewRoomId}
+                  className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg text-xs flex items-center gap-1.5 cursor-pointer ${
+                    !transferNewRoomId ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                >
+                  <ArrowLeftRight className="w-4 h-4" />
+                  <span>Confirm Transfer</span>
+                </button>
               </div>
             </div>
           </div>

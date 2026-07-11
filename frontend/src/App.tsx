@@ -563,6 +563,35 @@ export default function App() {
     }
   }, [bookings, guests, persistBookings, persistGuests, handleUpdateRoomStatus, handleAddLog, isBackendConnected]);
 
+  const handleTransferBookingRoom = useCallback((bookingId: string, newRoomId: string) => {
+    const booking = bookings.find(b => b.id === bookingId);
+    if (!booking) return;
+
+    const oldRoomId = booking.roomId;
+    const newRoom = rooms.find(r => r.id === newRoomId);
+    if (!newRoom) return;
+
+    // Update booking with new room
+    const updatedBookings = bookings.map(b =>
+      b.id === bookingId ? { ...b, roomId: newRoomId, roomNumber: newRoom.roomNumber, totalPrice: newRoom.price * Math.ceil((new Date(b.checkOutDate).getTime() - new Date(b.checkInDate).getTime()) / (1000 * 60 * 60 * 24)) } : b
+    );
+    persistBookings(updatedBookings);
+
+    // Update room statuses
+    handleUpdateRoomStatus(oldRoomId, "Cleaning");
+    handleUpdateRoomStatus(newRoomId, "Occupied");
+
+    // Sync backend
+    if (isBackendConnected) {
+      const updatedBooking = updatedBookings.find(b => b.id === bookingId);
+      if (updatedBooking) {
+        api.updateBooking(bookingId, { roomId: newRoomId, roomNumber: newRoom.roomNumber, totalPrice: updatedBooking.totalPrice }).catch(() => {});
+      }
+      api.updateRoom(oldRoomId, { status: "Cleaning" }).catch(() => {});
+      api.updateRoom(newRoomId, { status: "Occupied" }).catch(() => {});
+    }
+  }, [bookings, rooms, persistBookings, handleUpdateRoomStatus, handleAddLog, isBackendConnected]);
+
   const handleApplyNewRate = useCallback((roomType: string, newRate: number) => {
     setRooms(prev => {
       const updated = prev.map(r => r.type === roomType ? { ...r, price: newRate } : r);
@@ -617,6 +646,7 @@ export default function App() {
               setSelectedGuest(guest);
               setIsGuestDetailOpen(true);
             }}
+            onTransferBookingRoom={handleTransferBookingRoom}
           />
         );
       case "housekeeping":

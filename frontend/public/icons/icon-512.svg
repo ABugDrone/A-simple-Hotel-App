@@ -1,18 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <rect width="512" height="512" rx="64" fill="#FFFFFF"/>
-  <!-- Leaf fan - green petals (left) -->
-  <path d="M256 170 Q170 60 80 140 Q145 155 170 220 Q195 145 256 170Z" fill="#2E8B3A"/>
-  <path d="M256 170 Q195 45 130 90 Q180 130 195 195 Q210 125 256 170Z" fill="#3DA84A"/>
-  <path d="M256 162 Q230 30 195 50 Q225 105 240 162 Q240 100 256 162Z" fill="#4DB85A"/>
-  <!-- Leaf fan - blue petals (right) -->
-  <path d="M256 162 Q282 30 317 50 Q287 105 272 162 Q272 100 256 162Z" fill="#1565C0"/>
-  <path d="M256 170 Q317 45 382 90 Q332 130 317 195 Q302 125 256 170Z" fill="#1976D2"/>
-  <path d="M256 170 Q342 60 432 140 Q367 155 342 220 Q317 145 256 170Z" fill="#1E88E5"/>
+  
+  <!-- Fan petals - green (left 3) -->
+  <path d="M216 250 Q170 140 120 120 Q150 170 160 220 Q175 160 216 250Z" fill="#4CAF50"/>
+  <path d="M240 240 Q200 120 165 85 Q185 145 195 210 Q210 140 240 240Z" fill="#43A047"/>
+  <path d="M260 235 Q235 100 215 60 Q230 130 238 205 Q248 120 260 235Z" fill="#388E3C"/>
+  
+  <!-- Fan petals - blue (right 4) -->
+  <path d="M270 235 Q280 100 300 55 Q290 130 282 205 Q278 120 270 235Z" fill="#1565C0"/>
+  <path d="M290 240 Q315 120 350 80 Q325 145 310 210 Q305 140 290 240Z" fill="#1976D2"/>
+  <path d="M310 250 Q355 140 400 120 Q365 170 350 220 Q340 160 310 250Z" fill="#1E88E5"/>
+  <path d="M250 242 Q225 130 205 75 Q220 140 230 210 Q238 135 250 242Z" fill="#2196F3"/>
+  
   <!-- Blue wave -->
-  <path d="M80 240 Q160 190 256 205 Q352 190 432 240 Q360 280 256 288 Q152 280 80 240Z" fill="#1565C0"/>
-  <!-- Green wave accent -->
-  <path d="M140 265 Q195 242 256 250 Q317 242 372 265 Q320 292 256 298 Q192 292 140 265Z" fill="#2E8B3A"/>
-  <!-- Text -->
-  <text x="256" y="380" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="72" font-weight="900" fill="#1565C0" letter-spacing="5">AMIRABLE</text>
-  <text x="256" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#1A237E" letter-spacing="4">HOTEL &amp; HOSPITALITY</text>
+  <path d="M80 310 Q140 270 256 282 Q372 270 432 310 Q380 340 256 348 Q132 340 80 310Z" fill="#1565C0"/>
+  
+  <!-- Green wave -->
+  <path d="M140 340 Q190 318 256 325 Q322 318 372 340 Q330 358 256 363 Q182 358 140 340Z" fill="#4CAF50"/>
+  
+  <!-- Text: AMIRABLE -->
+  <text x="256" y="420" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="72" fill="#1565C0" letter-spacing="4">AMIRABLE</text>
+  
+  <!-- Text: HOTEL & HOSPITALITY -->
+  <text x="256" y="468" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="36" fill="#1A237E" letter-spacing="3">HOTEL &amp; HOSPITALITY</text>
 </svg>

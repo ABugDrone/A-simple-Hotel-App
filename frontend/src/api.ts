@@ -57,5 +57,8 @@ export const api = {
 
   getStaff: () => request("/staff"),
   updateStaff: (id: string, data: any) => request(`/staff/${id}`, { method: "PUT", body: JSON.stringify(data) }),
-  createStaff: (data: any) => request("/staff", { method: "POST", body: JSON.stringify(data) })
+  createStaff: (data: any) => request("/staff", { method: "POST", body: JSON.stringify(data) }),
+  deleteStaff: (id: string) => request(`/staff/${id}`, { method: "DELETE" }),
+  changePassword: (oldPassword: string, newPassword: string) =>
+    request("/auth/change-password", { method: "PUT", body: JSON.stringify({ oldPassword, newPassword }) })
 };

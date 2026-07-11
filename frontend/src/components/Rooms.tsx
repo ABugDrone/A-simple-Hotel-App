@@ -59,11 +59,43 @@ export default function Rooms({
   const [paymentAmount, setPaymentAmount] = useState<string>("");
   const [paymentMethod, setPaymentMethod] = useState<string>("Card");
 
+  // Quick charge states (kitchen/laundry on room cards)
+  const [quickChargeRoom, setQuickChargeRoom] = useState<string | null>(null);
+  const [quickChargeType, setQuickChargeType] = useState<"Kitchen" | "Laundry">("Kitchen");
+  const [quickChargeAmount, setQuickChargeAmount] = useState<string>("");
+
   // Filter logic
   const filteredRooms = rooms.filter(room => {
     if (selectedFilter === "All") return true;
     return room.status === selectedFilter;
   });
+
+  const handleQuickCharge = (roomId: string, chargeType: "Kitchen" | "Laundry", e: React.MouseEvent) => {
+    e.stopPropagation();
+    setQuickChargeRoom(roomId);
+    setQuickChargeType(chargeType);
+    setQuickChargeAmount("");
+  };
+
+  const handleQuickChargeSubmit = (roomId: string, e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const amount = parseFloat(quickChargeAmount);
+    if (!amount || amount <= 0) return;
+    const booking = bookings.find(b => b.roomId === roomId && b.status === "Checked In");
+    if (!booking) return;
+    const newCharge = {
+      id: `CHG-${Date.now().toString().slice(-4)}`,
+      description: quickChargeType,
+      amount,
+      date: new Date().toISOString().split("T")[0]
+    };
+    const updated = [...(booking.extraCharges || []), newCharge];
+    onUpdateBooking(booking.id, { extraCharges: updated });
+    onAddLog("Guest", `Posted ${quickChargeType} charge of ₦${amount} to Room ${booking.roomNumber} folio.`);
+    setQuickChargeRoom(null);
+    setQuickChargeAmount("");
+  };
 
   const handleOpenRoomModal = (room: Room) => {
     setSelectedRoom(room);
@@ -285,6 +317,45 @@ export default function Rooms({
                         </div>
                       </div>
                     </div>
+
+                    {/* Quick charge buttons */}
+                    {quickChargeRoom === room.id ? (
+                      <form onSubmit={(e) => handleQuickChargeSubmit(room.id, e)} className="pt-1.5 border-t border-slate-100" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase">{quickChargeType}</span>
+                          <div className="relative flex-1">
+                            <span className="absolute left-1.5 inset-y-0 flex items-center text-[10px] text-slate-400 font-bold">₦</span>
+                            <input
+                              type="number"
+                              required
+                              placeholder="Amount"
+                              value={quickChargeAmount}
+                              onChange={(e) => setQuickChargeAmount(e.target.value)}
+                              className="block w-full rounded border border-slate-200 pl-4 pr-1 py-1 text-[10px] bg-white font-mono text-slate-800"
+                              min="1"
+                              autoFocus
+                            />
+                          </div>
+                          <button type="submit" className="bg-slate-900 text-white px-2 py-1 rounded text-[9px] font-bold hover:bg-slate-800 cursor-pointer">Add</button>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); setQuickChargeRoom(null); }} className="text-slate-400 hover:text-slate-600 text-[9px] font-bold cursor-pointer">Cancel</button>
+                        </div>
+                      </form>
+                    ) : (
+                      <div className="flex gap-1.5 pt-1.5 border-t border-slate-100" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={(e) => handleQuickCharge(room.id, "Kitchen", e)}
+                          className="flex-1 text-[9px] font-bold py-1 px-1.5 rounded border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors cursor-pointer"
+                        >
+                          Kitchen
+                        </button>
+                        <button
+                          onClick={(e) => handleQuickCharge(room.id, "Laundry", e)}
+                          className="flex-1 text-[9px] font-bold py-1 px-1.5 rounded border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors cursor-pointer"
+                        >
+                          Laundry
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })()}

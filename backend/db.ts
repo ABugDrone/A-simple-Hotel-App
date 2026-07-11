@@ -37,7 +37,8 @@ function initSchema(d: SqlJsDatabase) {
       name TEXT NOT NULL,
       role TEXT NOT NULL,
       password TEXT NOT NULL,
-      allowedTabs TEXT NOT NULL DEFAULT '[]'
+      allowedTabs TEXT NOT NULL DEFAULT '[]',
+      passwordChanged INTEGER NOT NULL DEFAULT 0
     );
     CREATE TABLE IF NOT EXISTS rooms (
       id TEXT PRIMARY KEY,
@@ -142,11 +143,12 @@ function seedIfEmpty(d: SqlJsDatabase) {
   const count = dbGet<{ c: number }>(d, "SELECT COUNT(*) as c FROM staff");
   if (count && count.c > 0) return;
 
-  const hash = bcrypt.hashSync("password123", 10);
+  const adminUsername = process.env.ADMIN_USERNAME || "A.Adam";
+  const adminPassword = process.env.ADMIN_PASSWORD || "235711";
+  const adminName = process.env.ADMIN_NAME || "Admin";
+  const hash = bcrypt.hashSync(adminPassword, 10);
 
-  dbRun(d, "INSERT INTO staff VALUES (?,?,?,?,?,?)", ["S-101", "julian.marx", "Julian Marx", "Admin", hash, JSON.stringify(["overview","rooms","reservations","housekeeping","guests","billing","admin_config"])]);
-  dbRun(d, "INSERT INTO staff VALUES (?,?,?,?,?,?)", ["S-102", "robert.chen", "Robert Chen", "Front Desk", hash, JSON.stringify(["overview","rooms","reservations","guests","billing"])]);
-  dbRun(d, "INSERT INTO staff VALUES (?,?,?,?,?,?)", ["S-103", "sarah.jenkins", "Sarah Jenkins", "Housekeeping", hash, JSON.stringify(["rooms","housekeeping"])]);
+  dbRun(d, "INSERT INTO staff VALUES (?,?,?,?,?,?,?)", ["S-001", adminUsername, adminName, "Admin", hash, JSON.stringify(["overview","rooms","reservations","housekeeping","guests","billing","admin_config"]), 0]);
 
   const rooms = [
     ["101","101","Standard",1,120,"Occupied",JSON.stringify(["Queen Bed","High-speed Wi-Fi","Work Desk","Smart TV"])],

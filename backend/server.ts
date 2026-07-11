@@ -1,8 +1,12 @@
-import express from "express";
+import dotenv from "dotenv";
 import path from "path";
+dotenv.config({ path: path.resolve(process.cwd(), "..", ".env") });
+
+import express from "express";
 import cors from "cors";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import fs from "fs";
 import { getDb, dbRun, dbAll, dbGet, closeDb } from "./db.js";
 
 const app = express();
@@ -46,7 +50,8 @@ app.post("/api/auth/login", async (req, res) => {
     }
     const payload = {
       id: staff.id, username: staff.username, name: staff.name,
-      role: staff.role, allowedTabs: JSON.parse(staff.allowedTabs)
+      role: staff.role, allowedTabs: JSON.parse(staff.allowedTabs),
+      passwordChanged: !!staff.passwordChanged
     };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "24h" });
     res.json({ token, staff: payload });
@@ -57,6 +62,32 @@ app.post("/api/auth/login", async (req, res) => {
 
 app.get("/api/auth/verify", authenticate, (req, res) => {
   res.json({ valid: true, staff: req.user });
+});
+
+app.put("/api/auth/change-password", authenticate, async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ error: "Old and new passwords required" });
+    }
+    if (newPassword.length < 4) {
+      return res.status(400).json({ error: "New password must be at least 4 characters" });
+    }
+    const d = await getDb();
+    const staff = dbGet<any>(d, "SELECT * FROM staff WHERE id = ?", [req.user.id]);
+    if (!staff || !bcrypt.compareSync(oldPassword, staff.password)) {
+      return res.status(401).json({ error: "Current password is incorrect" });
+    }
+    const hashed = bcrypt.hashSync(newPassword, 10);
+    dbRun(d, "UPDATE staff SET password = ?, passwordChanged = 1 WHERE id = ?", [hashed, req.user.id]);
+    const payload = {
+      id: staff.id, username: staff.username, name: staff.name,
+      role: staff.role, allowedTabs: JSON.parse(staff.allowedTabs),
+      passwordChanged: true
+    };
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "24h" });
+    res.json({ token, staff: payload });
+  } catch (e: any) { res.status(500).json({ error: e.message }); }
 });
 
 // ─── Rooms ───────────────────────────────────────────────
@@ -242,8 +273,8 @@ app.post("/api/logs", authenticate, async (req, res) => {
 app.get("/api/staff", authenticate, async (_req, res) => {
   try {
     const d = await getDb();
-    const rows = dbAll<any>(d, "SELECT id, username, name, role, allowedTabs FROM staff");
-    res.json(rows.map(s => ({ ...s, allowedTabs: JSON.parse(s.allowedTabs) })));
+    const rows = dbAll<any>(d, "SELECT id, username, name, role, allowedTabs, passwordChanged FROM staff");
+    res.json(rows.map(s => ({ ...s, allowedTabs: JSON.parse(s.allowedTabs), passwordChanged: !!s.passwordChanged })));
   } catch (e: any) { res.status(500).json({ error: e.message }); }
 });
 
@@ -257,11 +288,18 @@ app.put("/api/staff/:id", authenticate, async (req, res) => {
     if (fields.role !== undefined) { sets.push("role = ?"); vals.push(fields.role); }
     if (fields.allowedTabs !== undefined) { sets.push("allowedTabs = ?"); vals.push(JSON.stringify(fields.allowedTabs)); }
     if (fields.username !== undefined) { sets.push("username = ?"); vals.push(fields.username); }
+    if (fields.password !== undefined) {
+      const hashed = bcrypt.hashSync(fields.password, 10);
+      sets.push("password = ?");
+      vals.push(hashed);
+      sets.push("passwordChanged = ?");
+      vals.push(0);
+    }
     if (sets.length === 0) return res.json({ updated: false });
     vals.push(req.params.id);
     dbRun(d, `UPDATE staff SET ${sets.join(", ")} WHERE id = ?`, vals);
-    const s = dbGet<any>(d, "SELECT id, username, name, role, allowedTabs FROM staff WHERE id = ?", [req.params.id]);
-    res.json({ ...s, allowedTabs: JSON.parse(s.allowedTabs) });
+    const s = dbGet<any>(d, "SELECT id, username, name, role, allowedTabs, passwordChanged FROM staff WHERE id = ?", [req.params.id]);
+    res.json({ ...s, allowedTabs: JSON.parse(s.allowedTabs), passwordChanged: !!s.passwordChanged });
   } catch (e: any) { res.status(500).json({ error: e.message }); }
 });
 
@@ -269,10 +307,50 @@ app.post("/api/staff", authenticate, async (req, res) => {
   try {
     const d = await getDb();
     const { id, username, name, role, password, allowedTabs } = req.body;
+    if (!password) return res.status(400).json({ error: "Password is required" });
     const hashed = bcrypt.hashSync(password, 10);
-    dbRun(d, "INSERT INTO staff VALUES (?,?,?,?,?,?)", [id, username, name, role, hashed, JSON.stringify(allowedTabs || [])]);
-    const s = dbGet<any>(d, "SELECT id, username, name, role, allowedTabs FROM staff WHERE id = ?", [id]);
-    res.json({ ...s, allowedTabs: JSON.parse(s.allowedTabs) });
+    dbRun(d, "INSERT INTO staff VALUES (?,?,?,?,?,?,?)", [id, username, name, role, hashed, JSON.stringify(allowedTabs || []), 0]);
+    const s = dbGet<any>(d, "SELECT id, username, name, role, allowedTabs, passwordChanged FROM staff WHERE id = ?", [id]);
+    res.json({ ...s, allowedTabs: JSON.parse(s.allowedTabs), passwordChanged: !!s.passwordChanged });
+  } catch (e: any) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete("/api/staff/:id", authenticate, async (req, res) => {
+  try {
+    const d = await getDb();
+    if (req.params.id === req.user.id) {
+      return res.status(400).json({ error: "Cannot delete your own account" });
+    }
+    dbRun(d, "DELETE FROM staff WHERE id = ?", [req.params.id]);
+    res.json({ deleted: true });
+  } catch (e: any) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── Backup & Restore ──────────────────────────────────
+app.get("/api/backup", authenticate, async (req: any, res: any) => {
+  try {
+    if (req.user.role !== "Admin") return res.status(403).json({ error: "Only admins can perform backup" });
+    const dbPath = path.join(process.cwd(), "data", "hotel.db");
+    if (!fs.existsSync(dbPath)) return res.status(404).json({ error: "Database file not found" });
+    const date = new Date().toISOString().split("T")[0];
+    res.download(dbPath, `hotel-backup-${date}.db`);
+  } catch (e: any) { res.status(500).json({ error: e.message }); }
+});
+
+app.post("/api/restore", authenticate, async (req: any, res: any) => {
+  try {
+    if (req.user.role !== "Admin") return res.status(403).json({ error: "Only admins can perform restore" });
+    const { data } = req.body;
+    if (!data) return res.status(400).json({ error: "No database data provided" });
+    const buffer = Buffer.from(data, "base64");
+    const dbPath = path.join(process.cwd(), "data", "hotel.db");
+    const backupPath = dbPath + ".backup";
+    if (fs.existsSync(dbPath)) fs.copyFileSync(dbPath, backupPath);
+    fs.writeFileSync(dbPath, buffer);
+    // Re-initialise database from new file
+    closeDb();
+    await getDb();
+    res.json({ success: true, message: "Database restored successfully" });
   } catch (e: any) { res.status(500).json({ error: e.message }); }
 });
 

@@ -48,6 +48,7 @@ export interface Staff {
   username: string;
   name: string;
   role: "Admin" | "Front Desk" | "Housekeeping" | "Billing";
-  allowedTabs: string[]; // List of tab IDs this staff member can access
+  allowedTabs: string[];
+  passwordChanged?: boolean;
 }
 

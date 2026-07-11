@@ -1,5 +1,5 @@
 import React from "react";
-import { 
+import {
   LayoutDashboard, 
   BedDouble, 
   CalendarDays, 
@@ -11,7 +11,8 @@ import {
   Settings,
   Download,
   Menu,
-  X
+  X,
+  Palette
 } from "lucide-react";
 import { Staff } from "../types";
 
@@ -25,6 +26,7 @@ interface SidebarProps {
   onToggleSidebar: () => void;
   onInstallPWA?: () => void;
   isInstallable?: boolean;
+  onThemeSettings?: () => void;
 }
 
 export default function Sidebar({ 
@@ -36,7 +38,8 @@ export default function Sidebar({
   isSidebarOpen,
   onToggleSidebar,
   onInstallPWA,
-  isInstallable
+  isInstallable,
+  onThemeSettings
 }: SidebarProps) {
   const allMenuItems = [
     { id: "overview", label: "Dashboard", icon: LayoutDashboard },
@@ -134,6 +137,17 @@ export default function Sidebar({
 
         {/* Footer / Occupancy Widget */}
         <div className="p-4 lg:p-8 border-t border-slate-100 bg-white space-y-4">
+          {/* Theme Settings Button */}
+          {onThemeSettings && (
+            <button
+              onClick={onThemeSettings}
+              className="w-full flex items-center gap-2 px-3 py-2.5 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-bold transition-all cursor-pointer"
+            >
+              <Palette className="w-4 h-4 flex-shrink-0" />
+              <span>Theme & Font</span>
+            </button>
+          )}
+
           {/* Install App Button */}
           <button
             onClick={onInstallPWA}

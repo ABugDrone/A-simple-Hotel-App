@@ -1,19 +1,19 @@
 import React, { useState } from "react";
 import { api, setToken } from "../api";
-import { Lock, User, Shield, LogIn, Hotel, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { Lock, User, LogIn, Hotel, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { Staff } from "../types";
 
 interface LoginProps {
   onLogin: (staff: Staff) => void;
-  staffList: Staff[];
   isBackendConnected?: boolean;
 }
 
-export default function Login({ onLogin, staffList, isBackendConnected }: LoginProps) {
+export default function Login({ onLogin, isBackendConnected }: LoginProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,47 +22,37 @@ export default function Login({ onLogin, staffList, isBackendConnected }: LoginP
       return;
     }
 
-    // If backend connected, try API login first
-    if (isBackendConnected) {
-      try {
-        const res = await api.login(username.trim(), password);
-        if (res.token && res.staff) {
-          setToken(res.token);
-          setError(null);
-          onLogin(res.staff);
-          return;
-        }
-      } catch {
-        // API login failed, fall through to local
-      }
-    }
-
-    // Fallback: local login
-    const foundStaff = staffList.find(
-      (s) => s.username.toLowerCase() === username.toLowerCase().trim()
-    );
-
-    if (!foundStaff) {
-      setError("Invalid username. You can select a quick-login profile below.");
+    if (!isBackendConnected) {
+      setError("Backend server is not connected. Please start the server and try again.");
       return;
     }
 
-    if (password !== "password" && password !== "admin" && password !== "frontdesk" && password !== "housekeeper") {
-      setError("Incorrect password. Use 'admin', 'frontdesk', or 'housekeeper' depending on the role, or 'password'.");
-      return;
-    }
-
+    setLoading(true);
     setError(null);
-    onLogin(foundStaff);
-  };
 
-  const handleQuickLogin = (staff: Staff) => {
-    onLogin(staff);
+    try {
+      const res = await api.login(username.trim(), password);
+      if (res.token && res.staff) {
+        setToken(res.token);
+        setError(null);
+        onLogin(res.staff);
+      } else {
+        setError("Invalid response from server.");
+      }
+    } catch (err: any) {
+      const msg = err?.message || "";
+      if (msg.includes("Invalid credentials") || msg.includes("401")) {
+        setError("Invalid username or password.");
+      } else {
+        setError("Login failed. Please check your credentials and try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div id="login-container" className="min-h-screen bg-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Decorative ambient background lights */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-emerald-500/10 rounded-full filter blur-3xl -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full filter blur-3xl translate-x-1/2 translate-y-1/2" />
 
@@ -82,7 +72,7 @@ export default function Login({ onLogin, staffList, isBackendConnected }: LoginP
           Staff Portal Authentication
         </h3>
         <p className="mt-2 text-center text-xs text-slate-400">
-          Access is monitored. Please sign in with your credential profile.
+          Access is monitored. Please sign in with your credentials.
         </p>
       </div>
 
@@ -112,7 +102,7 @@ export default function Login({ onLogin, staffList, isBackendConnected }: LoginP
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g., julian.marx"
+                  placeholder="Enter your username"
                   className="block w-full pl-10 pr-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                 />
               </div>
@@ -149,43 +139,14 @@ export default function Login({ onLogin, staffList, isBackendConnected }: LoginP
             <div>
               <button
                 type="submit"
-                className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl text-xs font-bold uppercase tracking-wider text-slate-950 bg-emerald-400 hover:bg-emerald-350 active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-emerald-500/10"
+                disabled={loading}
+                className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl text-xs font-bold uppercase tracking-wider text-slate-950 bg-emerald-400 hover:bg-emerald-350 active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-emerald-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <LogIn className="w-4 h-4" />
-                <span>Authenticate Log In</span>
+                <span>{loading ? "Authenticating..." : "Authenticate Log In"}</span>
               </button>
             </div>
           </form>
-
-          {/* Quick Profiles for Demonstration inside Sandbox */}
-          <div className="mt-8 pt-6 border-t border-slate-800/80">
-            <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] text-center mb-4">
-              Demo Quick-Login Profiles
-            </span>
-            <div className="grid grid-cols-1 gap-2.5">
-              {staffList.map((staff) => (
-                <button
-                  key={staff.id}
-                  type="button"
-                  onClick={() => handleQuickLogin(staff)}
-                  className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 hover:bg-slate-900 transition-all text-left group cursor-pointer"
-                >
-                  <div>
-                    <p className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">
-                      {staff.name}
-                    </p>
-                    <p className="text-[10px] text-slate-400 capitalize">
-                      {staff.role} • <span className="font-mono text-[9px] uppercase">{staff.username}</span>
-                    </p>
-                  </div>
-                  <Shield className={`w-4 h-4 ${
-                    staff.role === "Admin" ? "text-amber-500" : "text-slate-500"
-                  }`} />
-                </button>
-              ))}
-            </div>
-          </div>
-
         </div>
       </div>
     </div>

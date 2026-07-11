@@ -10,34 +10,12 @@ import AdminConfig from "./components/AdminConfig";
 import Login from "./components/Login";
 import SplashScreen from "./components/SplashScreen";
 import GuestDetailModal from "./components/GuestDetailModal";
+import ChangePassword from "./components/ChangePassword";
+import ThemeSettings from "./components/ThemeSettings";
 
 import { Room, Booking, Guest, OperationLog, Staff } from "./types";
 import { INITIAL_ROOMS, INITIAL_BOOKINGS, INITIAL_GUESTS, INITIAL_LOGS } from "./data";
 import { api, setToken, getToken } from "./api";
-
-const INITIAL_STAFF: Staff[] = [
-  {
-    id: "S-101",
-    username: "julian.marx",
-    name: "Julian Marx",
-    role: "Admin",
-    allowedTabs: ["overview", "rooms", "reservations", "housekeeping", "guests", "billing", "admin_config"]
-  },
-  {
-    id: "S-102",
-    username: "robert.chen",
-    name: "Robert Chen",
-    role: "Front Desk",
-    allowedTabs: ["overview", "rooms", "reservations", "guests", "billing"]
-  },
-  {
-    id: "S-103",
-    username: "sarah.jenkins",
-    name: "Sarah Jenkins",
-    role: "Housekeeping",
-    allowedTabs: ["rooms", "housekeeping"]
-  }
-];
 
 export default function App() {
   // Splash / Connection state
@@ -65,6 +43,48 @@ export default function App() {
   // Guest detail modal state
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
   const [isGuestDetailOpen, setIsGuestDetailOpen] = useState(false);
+
+  // Theme & Font state
+  const [appTheme, setAppTheme] = useState(() => localStorage.getItem("app_theme") || "default");
+  const [appFont, setAppFont] = useState(() => localStorage.getItem("app_font") || "inter");
+  const [showThemeSettings, setShowThemeSettings] = useState(false);
+
+  // Load font dynamically
+  useEffect(() => {
+    const linkId = "theme-font-link";
+    const existing = document.getElementById(linkId);
+    if (existing) existing.remove();
+
+    const fontMap: Record<string, string> = {
+      inter: "Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700",
+      jakarta: "Plus+Jakarta+Sans:wght@300;400;500;600;700",
+      dmsans: "DM+Sans:wght@300;400;500;600;700",
+      outfit: "Outfit:wght@300;400;500;600;700",
+    };
+
+    const fontUrl = fontMap[appFont] || fontMap.inter;
+    const link = document.createElement("link");
+    link.id = linkId;
+    link.rel = "stylesheet";
+    link.href = `https://fonts.googleapis.com/css2?family=${fontUrl}&display=swap`;
+    document.head.appendChild(link);
+  }, [appFont]);
+
+  // Apply theme/font to document
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", appTheme);
+    const fontConfig = { inter: { body: "'Inter', sans-serif", display: "'Space Grotesk', sans-serif" }, jakarta: { body: "'Plus Jakarta Sans', sans-serif", display: "'Plus Jakarta Sans', sans-serif" }, dmsans: { body: "'DM Sans', sans-serif", display: "'DM Sans', sans-serif" }, outfit: { body: "'Outfit', sans-serif", display: "'Outfit', sans-serif" } };
+    const f = fontConfig[appFont as keyof typeof fontConfig] || fontConfig.inter;
+    document.documentElement.style.setProperty("--font-body", f.body);
+    document.documentElement.style.setProperty("--font-display", f.display);
+    localStorage.setItem("app_theme", appTheme);
+    localStorage.setItem("app_font", appFont);
+  }, [appTheme, appFont]);
+
+  const handleApplyTheme = useCallback((theme: string, font: string) => {
+    setAppTheme(theme);
+    setAppFont(font);
+  }, []);
 
   // Restore auth token on mount
   useEffect(() => {
@@ -164,12 +184,12 @@ export default function App() {
         setBookings(INITIAL_BOOKINGS);
         setGuests(INITIAL_GUESTS);
         setLogs(INITIAL_LOGS);
-        setStaffList(INITIAL_STAFF);
+        setStaffList([]);
         localStorage.setItem("gview_rooms", JSON.stringify(INITIAL_ROOMS));
         localStorage.setItem("gview_bookings", JSON.stringify(INITIAL_BOOKINGS));
         localStorage.setItem("gview_guests", JSON.stringify(INITIAL_GUESTS));
         localStorage.setItem("gview_logs", JSON.stringify(INITIAL_LOGS));
-        localStorage.setItem("gview_staff", JSON.stringify(INITIAL_STAFF));
+        localStorage.setItem("gview_staff", JSON.stringify([]));
         setSplashStatus(connected ? "done" : "offline");
       }
     }
@@ -312,6 +332,15 @@ export default function App() {
     });
   }, [isBackendConnected]);
 
+  const handleDeleteStaff = useCallback((staffId: string) => {
+    setStaffList(prev => {
+      const updated = prev.filter(s => s.id !== staffId);
+      localStorage.setItem("gview_staff", JSON.stringify(updated));
+      if (isBackendConnected) api.deleteStaff(staffId).catch(() => {});
+      return updated;
+    });
+  }, [isBackendConnected]);
+
   const handleAddRoom = useCallback((newRoom: Room) => {
     setRooms(prev => {
       const updated = [...prev, newRoom];
@@ -373,7 +402,13 @@ export default function App() {
     });
   }, [isBackendConnected]);
 
+  const [pendingStaff, setPendingStaff] = useState<Staff | null>(null);
+
   const handleLogin = useCallback((staff: Staff) => {
+    if (staff.passwordChanged === false) {
+      setPendingStaff(staff);
+      return;
+    }
     setCurrentUser(staff);
     localStorage.setItem("gview_currentUser", JSON.stringify(staff));
     const newLog: OperationLog = {
@@ -388,6 +423,24 @@ export default function App() {
     const target = staff.allowedTabs.includes("overview") ? "overview" : staff.allowedTabs[0] || "rooms";
     setCurrentView(target);
   }, [isBackendConnected]);
+
+  const handlePasswordChangeComplete = useCallback((updatedStaff: Staff) => {
+    setPendingStaff(null);
+    setCurrentUser(updatedStaff);
+    localStorage.setItem("gview_currentUser", JSON.stringify(updatedStaff));
+    const target = updatedStaff.allowedTabs.includes("overview") ? "overview" : updatedStaff.allowedTabs[0] || "rooms";
+    setCurrentView(target);
+  }, []);
+
+  const handlePasswordChangeSkip = useCallback(() => {
+    if (pendingStaff) {
+      setCurrentUser(pendingStaff);
+      localStorage.setItem("gview_currentUser", JSON.stringify(pendingStaff));
+      setPendingStaff(null);
+      const target = pendingStaff.allowedTabs.includes("overview") ? "overview" : pendingStaff.allowedTabs[0] || "rooms";
+      setCurrentView(target);
+    }
+  }, [pendingStaff]);
 
   const handleLogout = useCallback(() => {
     if (currentUser) {
@@ -598,7 +651,9 @@ export default function App() {
             staffList={staffList}
             onUpdateStaff={handleUpdateStaff}
             onAddStaff={handleAddStaff}
+            onDeleteStaff={handleDeleteStaff}
             onAddLog={handleAddLog}
+            currentUser={currentUser}
             categories={categories}
             onAddCategory={handleAddCategory}
             onEditCategory={handleEditCategory}
@@ -636,8 +691,12 @@ export default function App() {
     );
   }
 
+  if (pendingStaff) {
+    return <ChangePassword staff={pendingStaff} onComplete={handlePasswordChangeComplete} onSkip={handlePasswordChangeSkip} />;
+  }
+
   if (!currentUser) {
-    return <Login onLogin={handleLogin} staffList={staffList} isBackendConnected={isBackendConnected} />;
+    return <Login onLogin={handleLogin} isBackendConnected={isBackendConnected} />;
   }
 
   return (
@@ -652,6 +711,7 @@ export default function App() {
         onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         onInstallPWA={handleInstallPWA}
         isInstallable={isInstallable}
+        onThemeSettings={() => setShowThemeSettings(true)}
       />
       <main className="flex-1 min-w-0 overflow-x-hidden pt-14 lg:pt-0">
         {renderView()}
@@ -665,6 +725,16 @@ export default function App() {
         bookings={bookings}
         rooms={rooms}
       />
+
+      {/* Theme Settings Modal */}
+      {showThemeSettings && (
+        <ThemeSettings
+          currentTheme={appTheme}
+          currentFont={appFont}
+          onApplyTheme={handleApplyTheme}
+          onClose={() => setShowThemeSettings(false)}
+        />
+      )}
 
       {/* PWA Install Banner */}
       <div className={`pwa-install-banner ${showInstallBanner ? "show" : ""}`}>

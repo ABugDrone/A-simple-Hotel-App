@@ -29,6 +29,8 @@ Then open `http://localhost:3000`
 npm run dev       # Concurrent backend + frontend dev servers
 ```
 
+> **First login:** All users are required to change their password upon first login. You may skip this step, but you will be prompted again on your next session.
+
 ## Features
 
 - **Full offline** — SQLite database runs locally, zero cloud dependencies
@@ -37,10 +39,14 @@ npm run dev       # Concurrent backend + frontend dev servers
 - **JWT authentication** — Secure login for staff roles (Admin, Front Desk, Housekeeping)
 - **Auto-seeded data** — Demo data on first run with 12 rooms, 4 guests, sample bookings
 
-## Default Logins
+## Admin Account
 
-| Username       | Password      | Role         |
-|---------------|---------------|-------------|
-| julian.marx   | password123   | Admin       |
-| robert.chen   | password123   | Front Desk  |
-| sarah.jenkins | password123   | Housekeeping|
+The default admin account credentials are configured in `.env` (not committed to version control).
+
+| Username | Password | Role  |
+|----------|----------|-------|
+| A.Adam   | 235711   | Admin |
+
+> **Note:** The admin account credentials are stored in `.env` which is excluded from Git.  
+> If you need the login credentials, please contact the developer or check the `.env` file.  
+> Developers can create their own authentication by modifying the `.env` file or running the backend seed manually.

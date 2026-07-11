@@ -11,7 +11,12 @@ import {
   Square,
   AlertCircle,
   Save,
-  Grid
+  Grid,
+  Trash2,
+  Key,
+  Database,
+  Download,
+  Upload
 } from "lucide-react";
 import { Room, Staff } from "../types";
 
@@ -23,7 +28,9 @@ interface AdminConfigProps {
   staffList: Staff[];
   onUpdateStaff: (staffId: string, updatedFields: Partial<Staff>) => void;
   onAddStaff: (newStaff: Staff) => void;
+  onDeleteStaff: (staffId: string) => void;
   onAddLog: (type: "Booking" | "Housekeeping" | "System" | "Guest", message: string) => void;
+  currentUser: Staff | null;
   categories: string[];
   onAddCategory: (name: string) => void;
   onEditCategory: (oldName: string, newName: string) => void;
@@ -38,7 +45,9 @@ export default function AdminConfig({
   staffList,
   onUpdateStaff,
   onAddStaff,
+  onDeleteStaff,
   onAddLog,
+  currentUser,
   categories,
   onAddCategory,
   onEditCategory,
@@ -59,6 +68,7 @@ export default function AdminConfig({
   const [newStaffName, setNewStaffName] = useState("");
   const [newStaffUsername, setNewStaffUsername] = useState("");
   const [newStaffRole, setNewStaffRole] = useState<Staff["role"]>("Front Desk");
+  const [newStaffPassword, setNewStaffPassword] = useState("");
   const [newStaffAllowedTabs, setNewStaffAllowedTabs] = useState<string[]>([
     "overview",
     "rooms",
@@ -66,6 +76,13 @@ export default function AdminConfig({
   ]);
   const [staffError, setStaffError] = useState<string | null>(null);
   const [staffSuccess, setStaffSuccess] = useState<string | null>(null);
+
+  // Staff password reset state
+  const [resetPasswordStaffId, setResetPasswordStaffId] = useState<string | null>(null);
+  const [resetPasswordValue, setResetPasswordValue] = useState("");
+
+  // Staff delete confirmation state
+  const [deleteConfirmStaffId, setDeleteConfirmStaffId] = useState<string | null>(null);
 
   // Individual editable states for room prices & room numbers
   const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
@@ -179,6 +196,16 @@ export default function AdminConfig({
       return;
     }
 
+    if (!newStaffPassword.trim()) {
+      setStaffError("Please set an initial password for the new staff member.");
+      return;
+    }
+
+    if (newStaffPassword.length < 4) {
+      setStaffError("Password must be at least 4 characters.");
+      return;
+    }
+
     const formattedUsername = newStaffUsername.toLowerCase().trim().replace(/\s+/g, ".");
 
     if (staffList.some(s => s.username === formattedUsername)) {
@@ -191,16 +218,18 @@ export default function AdminConfig({
       name: newStaffName.trim(),
       username: formattedUsername,
       role: newStaffRole,
-      allowedTabs: newStaffAllowedTabs
-    };
+      allowedTabs: newStaffAllowedTabs,
+      passwordChanged: false
+    } as Staff;
 
-    onAddStaff(newStaff);
+    onAddStaff({ ...newStaff, password: newStaffPassword } as any);
     onAddLog("System", `New staff member ${newStaff.name} (${newStaff.role}) registered in system.`);
     setStaffSuccess(`Staff profile created successfully! Username is: ${newStaff.username}`);
 
     // Reset
     setNewStaffName("");
     setNewStaffUsername("");
+    setNewStaffPassword("");
     setNewStaffAllowedTabs(["overview", "rooms", "reservations"]);
   };
 
@@ -317,6 +346,19 @@ export default function AdminConfig({
             <Users className="w-4 h-4" />
             <span>Staff Permissions</span>
           </button>
+          {currentUser?.role === "Admin" && (
+            <button
+              onClick={() => setActiveSubTab("backup")}
+              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer flex items-center gap-2 ${
+                activeSubTab === "backup"
+                  ? "bg-white text-slate-900 shadow-xs border border-slate-200/50"
+                  : "text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              <Database className="w-4 h-4" />
+              <span>Backup & Restore</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -826,6 +868,131 @@ export default function AdminConfig({
         </div>
       )}
 
+      {activeSubTab === "backup" && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div>
+                  <h3 className="font-display font-semibold text-slate-900 text-base">Database Backup & Restore</h3>
+                  <p className="text-[11px] text-slate-400">Download a backup of the entire database or restore from a previous backup file.</p>
+                </div>
+                <Database className="w-6 h-6 text-slate-400" />
+              </div>
+              <div className="p-6 space-y-6">
+                {/* Backup */}
+                <div className="bg-slate-50 border border-slate-200/60 p-5 rounded-lg space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Download className="w-5 h-5 text-emerald-500" />
+                    <h4 className="text-sm font-bold text-slate-900">Download Backup</h4>
+                  </div>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    Create a full snapshot of the current database including all rooms, guests, bookings, staff, logs, and configuration.
+                  </p>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const token = localStorage.getItem("hotel_auth_token");
+                        const res = await fetch("/api/backup", {
+                          headers: token ? { Authorization: `Bearer ${token}` } : {}
+                        });
+                        if (!res.ok) { const err = await res.json(); alert(err.error || "Backup failed"); return; }
+                        const blob = await res.blob();
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `hotel-backup-${new Date().toISOString().split("T")[0]}.db`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        onAddLog("System", "Administrator downloaded a database backup.");
+                      } catch { alert("Backup failed. Check server connection."); }
+                    }}
+                    className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 px-5 rounded-lg text-xs cursor-pointer transition-colors uppercase tracking-wider flex items-center gap-2 w-fit"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Backup
+                  </button>
+                </div>
+
+                {/* Restore */}
+                <div className="bg-slate-50 border border-slate-200/60 p-5 rounded-lg space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Upload className="w-5 h-5 text-amber-500" />
+                    <h4 className="text-sm font-bold text-slate-900">Restore from Backup</h4>
+                  </div>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    Upload a previously downloaded backup file (.db) to restore the database. This will replace all current data. A backup of the current state is automatically created before restore.
+                  </p>
+                  <input
+                    type="file"
+                    accept=".db"
+                    id="restore-file-input"
+                    className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-900 file:text-white hover:file:bg-slate-800 file:cursor-pointer cursor-pointer"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (!confirm("Are you sure you want to restore this backup? All current data will be replaced.")) {
+                        e.target.value = "";
+                        return;
+                      }
+                      try {
+                        const reader = new FileReader();
+                        reader.onload = async () => {
+                          const base64 = (reader.result as string).split(",")[1];
+                          const token = localStorage.getItem("hotel_auth_token");
+                          const res = await fetch("/api/restore", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+                            body: JSON.stringify({ data: base64 })
+                          });
+                          const result = await res.json();
+                          if (result.success) {
+                            alert("Database restored successfully! The page will now reload.");
+                            window.location.reload();
+                          } else {
+                            alert(result.error || "Restore failed");
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      } catch { alert("Restore failed. Check server connection."); }
+                      e.target.value = "";
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-6">
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
+              <div className="flex items-center gap-2 mb-4">
+                <ShieldAlert className="w-5 h-5 text-amber-500" />
+                <h3 className="font-display font-bold text-slate-900 text-sm">Important Notes</h3>
+              </div>
+              <ul className="space-y-2 text-[11px] text-slate-500 leading-relaxed">
+                <li className="flex gap-2">
+                  <span className="text-amber-500 font-bold">•</span>
+                  Backup files contain ALL data including staff accounts and passwords.
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-amber-500 font-bold">•</span>
+                  Restoring will replace the entire database. A backup of the current state is saved automatically before restore.
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-amber-500 font-bold">•</span>
+                  Only Administrators can perform backup and restore operations.
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-amber-500 font-bold">•</span>
+                  You will need to log in again after a restore if the staff data changes.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
       {activeSubTab === "staff" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
@@ -902,15 +1069,92 @@ export default function AdminConfig({
                           );
                         })}
                       </div>
+                    {/* Password reset and delete actions */}
+                    <div className="flex items-center gap-3 pt-2 border-t border-slate-100 mt-3">
+                      {resetPasswordStaffId === staff.id ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={resetPasswordValue}
+                            onChange={(e) => setResetPasswordValue(e.target.value)}
+                            placeholder="New password"
+                            className="px-2 py-1 border border-slate-300 rounded text-xs bg-white text-slate-900 w-28"
+                          />
+                          <button
+                            onClick={() => {
+                              const val = resetPasswordValue.trim();
+                              if (!val || val.length < 4) {
+                                alert("Password must be at least 4 characters.");
+                                return;
+                              }
+                              onUpdateStaff(staff.id, { password: val } as any);
+                              onAddLog("System", `Administrator reset password for staff member ${staff.name}.`);
+                              setResetPasswordStaffId(null);
+                              setResetPasswordValue("");
+                            }}
+                            className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded px-1.5 py-0.5 text-[9px] font-bold cursor-pointer"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => { setResetPasswordStaffId(null); setResetPasswordValue(""); }}
+                            className="border border-slate-300 hover:bg-slate-100 text-slate-500 rounded px-1.5 py-0.5 text-[9px] font-bold cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => { setResetPasswordStaffId(staff.id); setResetPasswordValue(""); }}
+                          className="flex items-center gap-1 text-[10px] font-bold text-amber-600 hover:text-amber-700 cursor-pointer hover:underline"
+                        >
+                          <Key className="w-3 h-3" />
+                          Reset Password
+                        </button>
+                      )}
+
+                      <span className="text-slate-300 font-semibold text-[10px]">|</span>
+
+                      {deleteConfirmStaffId === staff.id ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[9px] text-slate-500 font-bold">Delete {staff.name}?</span>
+                          <button
+                            onClick={() => {
+                              onDeleteStaff(staff.id);
+                              onAddLog("System", `Administrator deleted staff account ${staff.name} (${staff.username}).`);
+                              setDeleteConfirmStaffId(null);
+                            }}
+                            className="bg-rose-500 hover:bg-rose-600 text-white font-extrabold rounded px-1.5 py-0.5 text-[9px] cursor-pointer"
+                          >
+                            Yes
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirmStaffId(null)}
+                            className="border border-slate-300 hover:bg-slate-100 text-slate-500 font-extrabold rounded px-1.5 py-0.5 text-[9px] cursor-pointer"
+                          >
+                            No
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setDeleteConfirmStaffId(staff.id)}
+                          className="flex items-center gap-1 text-[10px] font-bold text-rose-600 hover:text-rose-700 cursor-pointer hover:underline"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          Delete Account
+                        </button>
+                      )}
                     </div>
 
                   </div>
-                ))}
-              </div>
+
+                </div>
+              ))}
             </div>
           </div>
+        </div>
 
-          {/* Create Staff Form Panel */}
+        {/* Create Staff Form Panel */}
           <div>
             <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
               <div className="flex items-center gap-2 mb-4">
@@ -978,6 +1222,20 @@ export default function AdminConfig({
                     <option value="Housekeeping">Housekeeping Supervisor</option>
                     <option value="Billing">Audit / Billing Accounts</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Initial Password *
+                  </label>
+                  <input
+                    type="text"
+                    value={newStaffPassword}
+                    onChange={(e) => setNewStaffPassword(e.target.value)}
+                    placeholder="Set initial password (min 4 chars)"
+                    className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono focus:outline-hidden text-slate-900"
+                    required
+                  />
                 </div>
 
                 <div className="space-y-2">

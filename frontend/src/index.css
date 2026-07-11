@@ -1,15 +1,69 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+:root {
+  --theme-primary: #0F172A;
+  --theme-primary-light: #1E293B;
+  --theme-accent: #10B981;
+  --theme-accent-hover: #059669;
+  --theme-accent-soft: #34D399;
+  --theme-sidebar-bg: #FFFFFF;
+  --theme-sidebar-text: #0F172A;
+  --theme-sidebar-muted: #64748B;
+  --theme-sidebar-border: #E2E8F0;
+  --theme-sidebar-active-bg: #F8FAFC;
+  --theme-bg: #F9FAFB;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Space Grotesk", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
+[data-theme="ocean"] {
+  --theme-primary: #0F4C81;
+  --theme-primary-light: #1E5A9E;
+  --theme-accent: #0EA5E9;
+  --theme-accent-hover: #0284C7;
+  --theme-accent-soft: #38BDF8;
+  --theme-sidebar-bg: #F0F9FF;
+  --theme-sidebar-border: #BAE6FD;
+  --theme-sidebar-active-bg: #E0F2FE;
+}
+
+[data-theme="sunset"] {
+  --theme-primary: #7C2D12;
+  --theme-primary-light: #9A3412;
+  --theme-accent: #F59E0B;
+  --theme-accent-hover: #D97706;
+  --theme-accent-soft: #FBBF24;
+  --theme-sidebar-bg: #FFFBEB;
+  --theme-sidebar-border: #FDE68A;
+  --theme-sidebar-active-bg: #FEF3C7;
+}
+
+[data-theme="forest"] {
+  --theme-primary: #064E3B;
+  --theme-primary-light: #065F46;
+  --theme-accent: #10B981;
+  --theme-accent-hover: #059669;
+  --theme-accent-soft: #34D399;
+  --theme-sidebar-bg: #ECFDF5;
+  --theme-sidebar-border: #A7F3D0;
+  --theme-sidebar-active-bg: #D1FAE5;
+}
+
+[data-theme="midnight"] {
+  --theme-primary: #1E1B4B;
+  --theme-primary-light: #312E81;
+  --theme-accent: #818CF8;
+  --theme-accent-hover: #6366F1;
+  --theme-accent-soft: #A5B4FC;
+  --theme-sidebar-bg: #EEF2FF;
+  --theme-sidebar-border: #C7D2FE;
+  --theme-sidebar-active-bg: #E0E7FF;
+}
+
 body {
-  background-color: #F9FAFB;
-  font-family: var(--font-sans);
+  background-color: var(--theme-bg);
+  font-family: var(--font-body);
   -webkit-tap-highlight-color: transparent;
 }
 

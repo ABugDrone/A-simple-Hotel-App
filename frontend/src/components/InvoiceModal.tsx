@@ -154,56 +154,68 @@ export default function InvoiceModal({
         </div>
 
         {/* Printable Invoice Container */}
-        <div className="p-10 space-y-8 bg-white overflow-y-auto flex-1 print:p-0 print:overflow-visible">
+        <div className="p-10 space-y-6 bg-white overflow-y-auto flex-1 print:p-8 print:overflow-visible">
           
-          {/* Invoice Header Section */}
-          <div className="flex flex-col sm:flex-row justify-between items-start gap-6 border-b border-slate-200 pb-8">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <img 
-                  src="/icons/icon-192.svg" 
-                  alt="Amirable Hotel & Hospitality Logo" 
-                  className="w-12 h-12 object-contain"
-                />
-                <div>
-                  <span className="font-display font-black text-slate-900 text-lg tracking-tight uppercase block">
-                    Amirable
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-500 tracking-wider uppercase">
-                    Hotel & Hospitality
-                  </span>
-                </div>
-              </div>
-              <p className="text-slate-400 text-xs leading-relaxed max-w-xs font-medium">
-                No 3, Parklane street, Karewa GRA,<br />
-                Jimeta Yola, Adamawa State<br />
-                <span className="font-semibold text-slate-500">Tel:</span> +2347038354392<br />
-                <span className="font-semibold text-slate-500">Email:</span> amirablesuites@gmail.com
+          {/* Invoice Header Section - Centered Corporate Layout */}
+          <div className="text-center border-b-2 border-slate-900 pb-6">
+            <div className="flex justify-center mb-3">
+              <img 
+                src="/icons/icon-192.svg" 
+                alt="Amirable Hotel & Hospitality Logo" 
+                className="w-16 h-16 object-contain"
+              />
+            </div>
+            <h1 className="font-display font-black text-slate-900 text-2xl tracking-wider uppercase">
+              Amirable Hotel & Hospitality
+            </h1>
+            <p className="text-[10px] text-slate-500 font-semibold tracking-wider mt-1">
+              Premium Accommodation & Conference Centre
+            </p>
+            <div className="flex justify-center gap-6 text-[10px] text-slate-500 mt-3 font-medium">
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3 h-3" />
+                No 3, Parklane Street, Karewa GRA, Jimeta Yola, Adamawa State
+              </span>
+            </div>
+            <div className="flex justify-center gap-6 text-[10px] text-slate-500 mt-1 font-medium">
+              <span className="flex items-center gap-1">
+                <Phone className="w-3 h-3" />
+                +2347038354392
+              </span>
+              <span className="flex items-center gap-1">
+                <Mail className="w-3 h-3" />
+                amirablesuites@gmail.com
+              </span>
+            </div>
+          </div>
+
+          {/* Invoice Title & Meta */}
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+            <div>
+              <h2 className="text-xl font-display font-black text-slate-900 tracking-tight uppercase">
+                {isFullyPaid ? "Invoice Statement" : "Payment Due Invoice"}
+              </h2>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">
+                Tax Invoice / Receipt
               </p>
             </div>
-
-            <div className="text-left sm:text-right space-y-1.5">
-              <h1 className="text-2xl font-display font-black text-slate-900 tracking-tight uppercase">
-                {isFullyPaid ? "Invoice Statement" : "Payment Due Invoice"}
-              </h1>
+            <div className="text-left sm:text-right space-y-1">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                 Invoice No: <span className="font-mono text-slate-900 font-bold">{invoiceNumber}</span>
               </p>
               <p className="text-xs font-semibold text-slate-500">
                 Date: <span className="text-slate-900 font-semibold">{invoiceDate}</span>
               </p>
-              
-              {/* Payment Status Badge */}
-              <div className="pt-2">
+              <div className="pt-1">
                 {isFullyPaid ? (
-                  <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                     <span>Paid in Full</span>
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-800 border border-rose-200 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                    <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-                    <span>Pending Balance</span>
+                  <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-800 border border-rose-200 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
+                    <AlertTriangle className="w-3 h-3 text-rose-500" />
+                    <span>Outstanding Balance</span>
                   </span>
                 )}
               </div>
@@ -389,12 +401,21 @@ export default function InvoiceModal({
           </div>
 
           {/* Footer Terms */}
-          <div className="border-t border-slate-200 pt-8 text-center text-[10px] text-slate-400 font-medium leading-relaxed">
-            <p>Thank you for choosing Amirable Suites. We appreciate your patronage.</p>
-            <p>All outstanding amounts are payable upon receipt or checkout. Late settlements incur operational interest charges.</p>
-            <p className="font-bold text-slate-500 mt-2 font-mono uppercase tracking-widest text-[9px]">
-              Computer Generated Invoice Statement - Official Copy
-            </p>
+          <div className="border-t border-slate-200 pt-6 mt-8">
+            <div className="text-center text-[10px] text-slate-400 font-medium leading-relaxed space-y-2">
+              <p className="font-bold text-slate-500 uppercase tracking-wider">Terms & Conditions</p>
+              <p>Payment is due upon checkout. A late fee of 2% may apply to outstanding balances after 7 days.</p>
+              <p>All rates are inclusive of applicable taxes. This invoice serves as your official receipt.</p>
+              <div className="pt-4 border-t border-slate-100">
+                <p className="font-bold text-slate-600 text-xs">Amirable Hotel & Hospitality</p>
+                <p className="text-[9px] text-slate-400 mt-1">
+                  Registered Business | Jimeta Yola, Adamawa State, Nigeria
+                </p>
+              </div>
+              <p className="font-bold text-slate-500 mt-3 font-mono uppercase tracking-widest text-[9px]">
+                Computer Generated Invoice Statement - Official Copy
+              </p>
+            </div>
           </div>
 
         </div>

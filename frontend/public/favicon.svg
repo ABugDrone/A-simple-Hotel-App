@@ -1,0 +1,10 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="64" fill="#1565C0"/>
+  <path d="M200 120 C200 120, 130 180, 150 240 C170 300, 250 280, 250 280" fill="#43A047"/>
+  <path d="M256 80 C256 80, 200 150, 215 220 C230 290, 280 270, 280 270" fill="#2E7D32"/>
+  <path d="M312 120 C312 120, 340 180, 335 240 C330 290, 270 280, 270 280" fill="#43A047"/>
+  <path d="M312 120 C312 120, 390 160, 375 220 C360 280, 290 270, 290 270" fill="#1B5E20"/>
+  <path d="M120 320 C120 320, 200 300, 256 310 C312 320, 400 340, 400 340 C400 340, 320 370, 256 360 C192 350, 120 320, 120 320" fill="#1565C0"/>
+  <text x="256" y="430" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="80" fill="#1565C0" letter-spacing="4">AMIRABLE</text>
+  <text x="256" y="480" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="32" fill="#333333" letter-spacing="6">HOTEL &amp; HOSPITALITY</text>
+</svg>

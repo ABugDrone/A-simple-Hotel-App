@@ -14,16 +14,9 @@ export default function SplashScreen({ status, message, onRetry, onContinueOffli
       <div className="text-center mb-12">
         <img 
           src="/logo.png" 
-          alt="Amirable Hotel & Hospitality Logo" 
-          className="w-28 h-28 mx-auto mb-6 object-contain"
+          alt="Amirable Hotel & Hospitality" 
+          className="w-64 h-auto mx-auto mb-6 object-contain"
         />
-        <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-[0.3em] text-slate-100">
-          AMIRABLE
-        </h1>
-        <div className="w-24 h-0.5 bg-amber-500 mx-auto my-5" />
-        <p className="text-sm md:text-base text-slate-400 tracking-[0.15em] font-light">
-          HOTEL & HOSPITALITY
-        </p>
       </div>
 
       {/* Spinner */}
@@ -118,7 +111,7 @@ export default function SplashScreen({ status, message, onRetry, onContinueOffli
       {/* Footer */}
       <div className="absolute bottom-8 text-center">
         <p className="text-[10px] text-slate-700 font-mono tracking-wider">
-          Amirable Suites Hotel Manager &copy; {new Date().getFullYear()}
+          Amirable Hotel & Hospitality Manager &copy; {new Date().getFullYear()}
         </p>
       </div>
     </div>

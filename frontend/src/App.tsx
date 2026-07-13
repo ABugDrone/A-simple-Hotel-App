@@ -99,22 +99,28 @@ export default function App() {
     }
   }, []);
 
-  // Connection check
-  const checkConnection = useCallback(async () => {
+  // Connection check with retry
+  const checkConnection = useCallback(async (retries = 3, delayMs = 2000): Promise<boolean> => {
     setSplashStatus("connecting");
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
-      const res = await api.health();
-      clearTimeout(timeout);
-      if (res.status === "ok") {
-        setIsBackendConnected(true);
-        return true;
+    for (let i = 0; i < retries; i++) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        const res = await api.health();
+        clearTimeout(timeout);
+        if (res.status === "ok") {
+          setIsBackendConnected(true);
+          return true;
+        }
+      } catch {
+        // wait before retry
+        if (i < retries - 1) {
+          await new Promise(r => setTimeout(r, delayMs));
+        }
       }
-      return false;
-    } catch {
-      return false;
     }
+    setIsBackendConnected(false);
+    return false;
   }, []);
 
   // Fetch all data from API
@@ -151,7 +157,7 @@ export default function App() {
   useEffect(() => {
     let cancelled = false;
     async function init() {
-      const connected = await checkConnection();
+      const connected = await checkConnection(3, 2000);
       if (cancelled) return;
       if (connected) {
         const fetched = await fetchAllData();
@@ -161,7 +167,7 @@ export default function App() {
           return;
         }
       }
-      // Fallback to localStorage
+      // Fallback to localStorage - always allow offline access
       const storedRooms = localStorage.getItem("gview_rooms");
       const storedBookings = localStorage.getItem("gview_bookings");
       const storedGuests = localStorage.getItem("gview_guests");
@@ -178,7 +184,6 @@ export default function App() {
         if (storedCategories) setCategories(JSON.parse(storedCategories));
         if (storedStaff) setStaffList(JSON.parse(storedStaff));
         if (storedCurrentUser) setCurrentUser(JSON.parse(storedCurrentUser));
-        setSplashStatus(connected ? "done" : "offline");
       } else {
         setRooms(INITIAL_ROOMS);
         setBookings(INITIAL_BOOKINGS);
@@ -190,8 +195,8 @@ export default function App() {
         localStorage.setItem("gview_guests", JSON.stringify(INITIAL_GUESTS));
         localStorage.setItem("gview_logs", JSON.stringify(INITIAL_LOGS));
         localStorage.setItem("gview_staff", JSON.stringify([]));
-        setSplashStatus(connected ? "done" : "offline");
       }
+      setSplashStatus("done");
     }
     init();
     return () => { cancelled = true; };
@@ -703,18 +708,32 @@ export default function App() {
         message={splashMessage}
         onRetry={() => {
           setSplashStatus("connecting");
-          checkConnection().then(connected => {
+          checkConnection(3, 2000).then(connected => {
             if (connected) {
               fetchAllData().then(fetched => {
-                setSplashStatus(fetched ? "done" : "offline");
+                setSplashStatus(fetched ? "done" : "done");
               });
             } else {
-              setSplashStatus("error");
-              setSplashMessage("Server not reachable. Make sure the backend is running.");
+              setSplashStatus("done");
             }
           });
         }}
         onContinueOffline={() => {
+          // Load cached data if available
+          const storedRooms = localStorage.getItem("gview_rooms");
+          const storedBookings = localStorage.getItem("gview_bookings");
+          const storedGuests = localStorage.getItem("gview_guests");
+          const storedLogs = localStorage.getItem("gview_logs");
+          const storedStaff = localStorage.getItem("gview_staff");
+          const storedCategories = localStorage.getItem("gview_categories");
+
+          if (storedRooms) setRooms(JSON.parse(storedRooms));
+          if (storedBookings) setBookings(JSON.parse(storedBookings));
+          if (storedGuests) setGuests(JSON.parse(storedGuests));
+          if (storedLogs) setLogs(JSON.parse(storedLogs));
+          if (storedStaff) setStaffList(JSON.parse(storedStaff));
+          if (storedCategories) setCategories(JSON.parse(storedCategories));
+
           setSplashStatus("done");
         }}
       />

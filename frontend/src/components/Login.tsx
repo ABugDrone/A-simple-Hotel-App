@@ -23,7 +23,7 @@ export default function Login({ onLogin, isBackendConnected }: LoginProps) {
     }
 
     if (!isBackendConnected) {
-      setError("Backend server is not connected. Please start the server and try again.");
+      setError("Server is offline. Please start the backend server (run start.bat) and try again.");
       return;
     }
 
